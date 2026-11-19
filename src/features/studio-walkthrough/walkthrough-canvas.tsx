@@ -20,6 +20,7 @@ import {
   studioModelRotation,
 } from "@/features/studio-anatomy/lib/studio-model";
 import { gsap, reducedMotionQuery, ScrollTrigger } from "@/lib/motion";
+import { chapterProgress } from "./chapter-progress";
 import { walkthroughPose } from "./walkthrough-route";
 import type { WalkthroughStop } from "./walkthrough-stops";
 
@@ -72,10 +73,29 @@ function StudioTourScene({
     const motion = window.matchMedia(reducedMotionQuery);
     gsap.registerPlugin(ScrollTrigger);
 
-    const renderPose = (progress: number) => {
+    const chapters = Array.from(
+      element.querySelectorAll<HTMLElement>("[data-tour-chapter]"),
+    );
+    let starts: number[] = [];
+    let holds: number[] = [];
+    const measure = () => {
+      starts = chapters.map(
+        (chapter) => chapter.offsetTop - chapters[0].offsetTop,
+      );
+      holds = chapters.map((chapter) => {
+        const layout = chapter.querySelector<HTMLElement>(
+          "[data-gallery-layout]",
+        );
+        return layout
+          ? Math.max(0, chapter.offsetHeight - layout.offsetHeight)
+          : 0;
+      });
+    };
+    measure();
+    const renderPose = (scroll: number) => {
       const { position, target } = walkthroughPose(
         stops,
-        progress * stops.length,
+        chapterProgress(scroll, starts, holds),
         motion.matches,
       );
       camera.position.copy(toScenePoint(position));
@@ -87,13 +107,19 @@ function StudioTourScene({
       start: "top top",
       endTrigger: finalChapter,
       end: "top top",
-      onUpdate: ({ progress }) => renderPose(progress),
-      onRefresh: ({ progress }) => renderPose(progress),
+      onUpdate: (self) => renderPose(self.scroll() - self.start),
+      onRefresh: (self) => {
+        measure();
+        renderPose(self.scroll() - self.start);
+      },
     });
-    const sync = () => renderPose(trigger.progress);
+    const sync = () => renderPose(trigger.scroll() - trigger.start);
+    const resize = new ResizeObserver(() => trigger.refresh());
+    resize.observe(element);
     sync();
     motion.addEventListener("change", sync);
     return () => {
+      resize.disconnect();
       motion.removeEventListener("change", sync);
       trigger.kill();
     };

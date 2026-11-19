@@ -32,7 +32,7 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   await expect(canvas).toBeVisible();
   const cinema = page.locator("#tour-cinema_l1");
   await expect(
-    cinema.getByRole("heading", { name: "Cinema" }),
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
   ).toBeInViewport();
   await expect
     .poll(async () => (await stageShot()).equals(corridor))
@@ -126,18 +126,288 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   await page.getByRole("link", { name: "Continue upstairs" }).click();
   await expect(page).toHaveURL(/#tour-diy_self_photo_l2$/);
   const diy = page.locator("#tour-diy_self_photo_l2");
-  await expect(diy.getByRole("heading")).toBeInViewport();
+  await expect(
+    diy.getByRole("heading", { name: "DIY Self Photo Passport" }),
+  ).toBeInViewport();
+  const passportGallery = diy.getByRole("complementary", {
+    name: "DIY Self Photo Passport gallery",
+  });
+  await expect(passportGallery).toBeVisible();
+  await expect(passportGallery.getByRole("img")).toHaveCount(4);
+  const parkedPhoto = passportGallery.locator('[data-photo-position="hidden"]');
+  await expect(parkedPhoto).toHaveCount(1);
+  await expect(parkedPhoto).toHaveCSS("opacity", "0");
+
+  await expect
+    .poll(() =>
+      passportGallery
+        .getByRole("img")
+        .evaluateAll((photos) =>
+          photos.every(
+            (photo) =>
+              photo instanceof HTMLImageElement &&
+              photo.complete &&
+              photo.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
   await expect(diy.getByText("Floor 2", { exact: true })).toBeInViewport();
   await expect.poll(async () => (await stageShot()).equals(stairs)).toBe(false);
 
   await menu.click();
   await nav
-    .getByRole("link", { name: "Customizable Self Photo Portrait" })
+    .getByRole("link", { name: "Self Photo Passport", exact: true })
     .click();
   const portrait = page.locator("#tour-self_photo_portrait_l2");
-  await expect(portrait.getByRole("heading")).toBeInViewport();
+  await expect(
+    portrait.getByRole("heading", { name: "Self Photo Passport" }),
+  ).toBeInViewport();
+  await expect(portrait.getByText("40k/session")).toBeVisible();
+  await expect(portrait.getByText("+15k for DIY passport")).toBeVisible();
+  const gallery = portrait.getByRole("complementary", {
+    name: "Self Photo Passport gallery",
+  });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
   await portrait.getByText("Look around", { exact: true }).click();
   await expect(
     portrait.getByText(/backdrop, camera, and studio lights/),
   ).toBeVisible();
+});
+
+test("Hellden Portrait displays its price, inclusions, and three supplied photos", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 820 });
+  await page.goto("/#tour-portrait_l1");
+  const portrait = page.locator("#tour-portrait_l1");
+  const panel = portrait.getByRole("complementary", {
+    name: "Hellden Portrait gallery",
+  });
+  const titleCard = portrait
+    .getByRole("heading", { name: "Hellden Portrait" })
+    .locator("..");
+  await expect(titleCard.getByText("35k/session")).toBeVisible();
+  await expect(panel.getByText("35k/session")).toHaveCount(0);
+  await expect(
+    portrait
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(portrait.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = portrait.getByRole("list", {
+    name: "Hellden Portrait examples",
+  });
+  await gallery.scrollIntoViewIfNeeded();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+  const mobileCard = await titleCard.boundingBox();
+  const mobilePanel = await panel.boundingBox();
+  expect(mobilePanel?.y ?? 0).toBeGreaterThan(
+    (mobileCard?.y ?? 0) + (mobileCard?.height ?? 0),
+  );
+
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await expect(panel).toBeVisible();
+  const desktopCard = await titleCard.boundingBox();
+  const desktopPanel = await panel.boundingBox();
+  expect(desktopPanel?.x ?? 0).toBeGreaterThan(
+    (desktopCard?.x ?? 0) + (desktopCard?.width ?? 0),
+  );
+});
+
+test("scroll advances each stacked photo before leaving Portrait", async ({
+  page,
+}) => {
+  await page.goto("/#tour-portrait_l1");
+  const portrait = page.locator("#tour-portrait_l1");
+  const panel = portrait.getByRole("complementary", {
+    name: "Hellden Portrait gallery",
+    includeHidden: true,
+  });
+  const photos = panel.locator("[data-gallery-photo]");
+  const jumpTo = (fraction: number) =>
+    portrait.evaluate((chapter, position) => {
+      const layout = chapter.querySelector<HTMLElement>(
+        "[data-gallery-layout]",
+      )!;
+      const hold = (chapter as HTMLElement).offsetHeight - layout.offsetHeight;
+      window.scrollBy(0, chapter.getBoundingClientRect().top + hold * position);
+    }, fraction);
+  await expect(photos.nth(1)).toHaveAttribute("data-photo-position", "active");
+  await expect(photos.nth(0)).toHaveAttribute("data-photo-position", "above");
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "below");
+  const frame = await photos.nth(1).getByRole("img").boundingBox();
+  expect(frame).not.toBeNull();
+  expect(frame!.width / frame!.height).toBeCloseTo(0.75, 1);
+  expect(frame!.height).toBeGreaterThanOrEqual(
+    0.5 * (page.viewportSize()?.height ?? 0),
+  );
+  await expect(panel).toHaveCSS("opacity", "1");
+  await jumpTo(0.5);
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(
+    portrait.getByRole("heading", { name: "Hellden Portrait" }),
+  ).toBeInViewport();
+  await jumpTo(0.85);
+  await expect(photos.nth(0)).toHaveAttribute("data-photo-position", "active");
+  await jumpTo(1.1);
+  await expect(panel).toBeHidden();
+  await jumpTo(0.5);
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(panel).toBeVisible();
+});
+
+test("Cinema holds the camera and scrolls all three photos", async ({
+  page,
+}) => {
+  await page.goto("/#tour-cinema_l1");
+  const cinema = page.locator("#tour-cinema_l1");
+  await expect(
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
+  ).toBeVisible();
+  await expect(cinema.getByText("40k/session")).toBeVisible();
+  await expect(
+    cinema
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(cinema.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const panel = cinema.getByRole("complementary", { name: "Cinema gallery" });
+  const photos = panel.locator("[data-gallery-photo]");
+  await expect(panel).toBeVisible();
+  await expect(photos).toHaveCount(3);
+  await expect(photos.nth(1)).toHaveAttribute("data-photo-position", "active");
+  await cinema.evaluate((chapter) => {
+    const layout = chapter.querySelector<HTMLElement>("[data-gallery-layout]")!;
+    const hold = (chapter as HTMLElement).offsetHeight - layout.offsetHeight;
+    window.scrollBy(0, chapter.getBoundingClientRect().top + hold * 0.55);
+  });
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
+  ).toBeInViewport();
+});
+
+test("Hellden Record shows its session offer and photo stack", async ({
+  page,
+}) => {
+  await page.goto("/#tour-record_l1");
+  const record = page.locator("#tour-record_l1");
+  await expect(
+    record.getByRole("heading", { name: "Hellden Record" }),
+  ).toBeInViewport();
+  await expect(record.getByText("40k/session")).toBeVisible();
+  await expect(
+    record
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveCount(4);
+  await expect(record.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = record.getByRole("complementary", { name: "Record gallery" });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+});
+
+test("Hellden Express shows its session inclusions and photo stack", async ({
+  page,
+}) => {
+  await page.goto("/#tour-express_l1");
+  const express = page.locator("#tour-express_l1");
+  await expect(
+    express.getByRole("heading", { name: "Hellden Express" }),
+  ).toBeInViewport();
+  await expect(express.getByText("40k/session")).toBeVisible();
+  await expect(
+    express
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(express.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = express.getByRole("complementary", {
+    name: "Express gallery",
+  });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+});
+
+test("DIY photography area loads its three photos", async ({ page }) => {
+  await page.goto("/#tour-diy_l1");
+  const room = page.locator("#tour-diy_l1");
+  await expect(room.getByText("Floor 1", { exact: true })).toBeInViewport();
+  const gallery = room.getByRole("complementary", {
+    name: "DIY photography area gallery",
+  });
+  await expect(gallery).toBeVisible();
+  const photos = gallery.getByRole("img");
+  await expect(photos).toHaveCount(3);
+  await expect
+    .poll(() =>
+      photos.evaluateAll((images) =>
+        images.every(
+          (image) =>
+            image instanceof HTMLImageElement &&
+            image.complete &&
+            image.naturalWidth > 0,
+        ),
+      ),
+    )
+    .toBe(true);
 });

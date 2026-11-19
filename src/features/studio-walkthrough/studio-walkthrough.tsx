@@ -7,10 +7,14 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type CSSProperties,
 } from "react";
 import { sectionIds } from "@/config/navigation";
 import { floors } from "@/features/studio-anatomy/types/rooms";
 import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-error-boundary";
+import { RoomSession } from "./room-session";
+import { roomPhotos } from "./room-photos";
+import { RoomPhotoStack } from "./room-photo-stack";
 import { entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
 import styles from "./studio-walkthrough.module.css";
@@ -20,6 +24,20 @@ const WalkthroughCanvas = dynamic(() => import("./walkthrough-canvas"), {
 });
 
 const entranceId = "tour-entrance";
+
+const sessions = new Map<
+  string,
+  { title: string; price: number; passportAddOn?: number }
+>([
+  ["portrait_l1", { title: "Hellden Portrait", price: 35 }],
+  ["cinema_l1", { title: "Hellden Cinema", price: 40 }],
+  ["record_l1", { title: "Hellden Record", price: 40 }],
+  ["express_l1", { title: "Hellden Express", price: 40 }],
+  [
+    "self_photo_portrait_l2",
+    { title: "Self Photo Passport", price: 40, passportAddOn: 15 },
+  ],
+]);
 
 function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {
   event.currentTarget.closest("details")?.removeAttribute("open");
@@ -53,7 +71,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
       }
     }
 
-    if (window.location.hash.startsWith("#tour-")) loadOnTourScroll();
+    loadOnTourScroll();
     window.addEventListener("scroll", loadOnTourScroll, { passive: true });
     return () => window.removeEventListener("scroll", loadOnTourScroll);
   }, [requestScene, status]);
@@ -86,6 +104,72 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
       window.removeEventListener("scroll", scheduleSync);
       window.removeEventListener("resize", scheduleSync);
       cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
+    const galleries = Array.from(
+      tour.current?.querySelectorAll<HTMLElement>("[data-gallery-chapter]") ??
+        [],
+    ).flatMap((chapter) => {
+      const layout = chapter.querySelector<HTMLElement>(
+        "[data-gallery-layout]",
+      );
+      const photos = Array.from(
+        chapter.querySelectorAll<HTMLElement>("[data-gallery-photo]"),
+      );
+      return layout && photos.length ? [{ chapter, layout, photos }] : [];
+    });
+
+    const updateGalleries = () => {
+      for (const { chapter, layout, photos } of galleries) {
+        const travelled = -chapter.getBoundingClientRect().top;
+        const hold = chapter.offsetHeight - layout.offsetHeight;
+        const visible =
+          travelled >= -layout.offsetHeight * 0.1 && travelled <= hold;
+        chapter.dataset.galleryVisible = String(visible);
+
+        const step = Math.min(
+          photos.length - 1,
+          Math.max(0, Math.floor(travelled / (hold / photos.length || 1))),
+        );
+        const photo = (step + 1) % photos.length;
+        const midpoint = Math.floor(photos.length / 2);
+        photos.forEach((item, index) => {
+          const position =
+            ((index - photo + midpoint + photos.length) % photos.length) -
+            midpoint;
+          item.style.setProperty("--photo-offset", String(position));
+          item.dataset.photoPosition =
+            Math.abs(position) > 1
+              ? "hidden"
+              : position === 0
+                ? "active"
+                : position < 0
+                  ? "above"
+                  : "below";
+          const link = item.querySelector("a");
+          if (link) link.tabIndex = position === 0 ? 0 : -1;
+        });
+      }
+    };
+
+    for (const { chapter } of galleries)
+      chapter.dataset.galleryVisible = "false";
+    updateGalleries();
+    window.addEventListener("scroll", updateGalleries, { passive: true });
+    window.addEventListener("resize", updateGalleries);
+    return () => {
+      window.removeEventListener("scroll", updateGalleries);
+      window.removeEventListener("resize", updateGalleries);
+      for (const { chapter, photos } of galleries) {
+        delete chapter.dataset.galleryVisible;
+        photos.forEach((item) => {
+          item.style.removeProperty("--photo-offset");
+          delete item.dataset.photoPosition;
+          item.querySelector("a")?.removeAttribute("tabindex");
+        });
+      }
     };
   }, []);
 
@@ -160,6 +244,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
 
       <div className={styles.chapters}>
         <article
+          data-tour-chapter
           id={entranceId}
           ref={entranceChapter}
           className={`${styles.chapter} ${styles.entranceChapter}`}
@@ -191,17 +276,21 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           </div>
         </article>
 
-        {stops.map((room, index) => (
-          <article
-            key={room.id}
-            id={tourChapterId(room.id)}
-            className={styles.chapter}
-            data-last-stop={index === stops.length - 1 || undefined}
-            tabIndex={-1}
-          >
+        {stops.map((room, index) => {
+          const photos = roomPhotos[room.id];
+          const session = sessions.get(room.id);
+          const roomCard = (
             <div className={styles.roomCard}>
               <p className="mb-2 text-sm text-amber">Floor {room.floor}</p>
-              <h2 className={styles.roomTitle}>{room.name}</h2>
+              <h2 className={styles.roomTitle}>
+                {session?.title ?? room.name}
+              </h2>
+              {session && (
+                <RoomSession
+                  price={session.price}
+                  passportAddOn={session.passportAddOn}
+                />
+              )}
               <details className="mt-4">
                 <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
                   Look around
@@ -229,8 +318,41 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
                 </a>
               )}
             </div>
-          </article>
-        ))}
+          );
+          return (
+            <article
+              key={room.id}
+              id={tourChapterId(room.id)}
+              className={photos ? styles.galleryChapter : styles.chapter}
+              style={
+                photos
+                  ? ({ "--photo-count": photos.length } as CSSProperties)
+                  : undefined
+              }
+              data-tour-chapter
+              data-gallery-chapter={photos ? true : undefined}
+              data-last-stop={index === stops.length - 1 || undefined}
+              tabIndex={-1}
+            >
+              {photos ? (
+                <div
+                  className={`${styles.chapter} ${styles.galleryLayout}`}
+                  data-gallery-layout
+                >
+                  {roomCard}
+                  <aside
+                    aria-label={`${room.name} gallery`}
+                    className={styles.galleryPanel}
+                  >
+                    <RoomPhotoStack photos={photos} roomName={room.name} />
+                  </aside>
+                </div>
+              ) : (
+                roomCard
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

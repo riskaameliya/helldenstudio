@@ -82,5 +82,5 @@ test("losing the renderer context preserves room selection and HTML controls", a
   await studio.getByLabel("Room on map").selectOption("diy_self_photo_l2");
   await expect(
     studio.getByRole("status", { name: "Studio selection" }),
-  ).toHaveText("DIY Self Photo · Floor 2");
+  ).toHaveText("DIY Self Photo Passport · Floor 2");
 });

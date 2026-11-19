@@ -65,3 +65,14 @@ test("stairs climb to the landing cut and the upper-floor rooms keep their sourc
     );
   }
 });
+
+test("chapter progress holds the Portrait camera while all gallery photos scroll", async () => {
+  const { chapterProgress } =
+    await import("../../src/features/studio-walkthrough/chapter-progress");
+  const starts = [0, 800, 2800, 3600];
+  expect(chapterProgress(800, starts, [0, 1200, 0])).toBe(1);
+  expect(chapterProgress(1900, starts, [0, 1200, 0])).toBe(1);
+  expect(chapterProgress(2400, starts, [0, 1200, 0])).toBe(1.5);
+  expect(chapterProgress(2800, starts, [0, 1200, 0])).toBe(2);
+  expect(chapterProgress(3100, starts, [0, 1200, 400])).toBe(2);
+});
