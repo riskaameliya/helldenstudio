@@ -24,7 +24,7 @@ test("the desktop reveal follows scroll until a manual selection takes over", as
   await page.goto("/");
   expect(modelRequests).toBe(0);
 
-  const studio = page.getByRole("region", { name: "Studio preview" });
+  const studio = page.getByRole("region", { name: "Studio map" });
   const previewStatus = studio.getByRole("status", {
     name: "3D preview status",
   });
@@ -63,7 +63,7 @@ test("the desktop reveal follows scroll until a manual selection takes over", as
 
   await studio.getByRole("button", { name: "Floor 1" }).click();
   await studio.getByRole("button", { name: "Floor 2" }).click();
-  await studio.getByRole("button", { name: "Back to building" }).click();
+  await studio.getByRole("button", { name: "Whole building" }).click();
   await expect.poll(readFrame).toBe(overview);
   await scrollToStage(0.34);
   await scrollToStage(0.96);

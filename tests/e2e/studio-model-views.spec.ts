@@ -6,9 +6,9 @@ test("changing the selection changes the rendered model and returns to the overv
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 820 });
   await page.goto("/");
-  const studio = page.getByRole("region", { name: "Studio preview" });
+  const studio = page.getByRole("region", { name: "Studio map" });
   const canvas = studio.locator("canvas");
-  await studio.getByRole("button", { name: "Load 3D preview" }).click();
+  await studio.getByRole("button", { name: "Open 3D map" }).click();
   await expect(
     studio.getByRole("status", { name: "3D preview status" }),
   ).toHaveText("Studio model loaded.");
@@ -23,14 +23,11 @@ test("changing the selection changes the rendered model and returns to the overv
     .poll(async () => (await canvas.screenshot()).equals(lower))
     .toBe(false);
   const upper = await canvas.screenshot();
-  await page
-    .getByRole("button", { name: "DIY Self Photo", exact: true })
-    .click();
-  await page.getByRole("link", { name: "View in 3D" }).click();
+  await studio.getByLabel("Room on map").selectOption("diy_self_photo_l2");
   await expect
     .poll(async () => (await canvas.screenshot()).equals(upper))
     .toBe(false);
-  await studio.getByRole("button", { name: "Back to building" }).click();
+  await studio.getByRole("button", { name: "Whole building" }).click();
   await expect
     .poll(async () => (await canvas.screenshot()).equals(overview))
     .toBe(true);
@@ -53,11 +50,11 @@ test("choosing a floor with WebGL disabled keeps the room controls usable", asyn
   await page.getByRole("button", { name: "Floor 1" }).click();
   await expect(
     page.getByRole("status", { name: "3D preview status" }),
-  ).toHaveText("The 3D preview is unavailable.");
-  await page.getByRole("button", { name: "Cinema", exact: true }).click();
+  ).toHaveText("The 3D map is unavailable.");
+  await page.getByLabel("Room on map").selectOption("cinema_l1");
   await expect(
     page.getByRole("status", { name: "Studio selection" }),
-  ).toHaveText("Cinema");
+  ).toHaveText("Cinema · Floor 1");
 });
 
 test("losing the renderer context preserves room selection and HTML controls", async ({
@@ -65,7 +62,7 @@ test("losing the renderer context preserves room selection and HTML controls", a
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const studio = page.getByRole("region", { name: "Studio preview" });
+  const studio = page.getByRole("region", { name: "Studio map" });
   await studio.getByRole("button", { name: "Floor 2" }).click();
   const status = studio.getByRole("status", { name: "3D preview status" });
   await expect(status).toHaveText("Studio model loaded.");
@@ -77,15 +74,13 @@ test("losing the renderer context preserves room selection and HTML controls", a
     return Boolean(extension);
   });
   expect(contextLost).toBe(true);
-  await expect(status).toHaveText("The 3D preview is unavailable.");
+  await expect(status).toHaveText("The 3D map is unavailable.");
   await expect(studio.getByRole("button", { name: "Floor 2" })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await page
-    .getByRole("button", { name: "DIY Self Photo", exact: true })
-    .click();
+  await studio.getByLabel("Room on map").selectOption("diy_self_photo_l2");
   await expect(
     studio.getByRole("status", { name: "Studio selection" }),
-  ).toHaveText("DIY Self Photo");
+  ).toHaveText("DIY Self Photo · Floor 2");
 });

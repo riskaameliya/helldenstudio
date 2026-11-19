@@ -94,6 +94,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
 
   return (
     <section
+      id={sectionIds.tour}
       ref={tour}
       aria-labelledby="hero-title"
       className={styles.tour}

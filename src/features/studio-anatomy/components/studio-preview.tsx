@@ -48,45 +48,43 @@ export function StudioPreview(view: StudioModelView) {
   const showCanvas = status === "loading" || status === "ready";
 
   return (
-    <div className="mt-8">
-      <div
-        ref={stage}
-        className="relative grid aspect-[4/3] max-h-[32rem] place-items-center border border-paper/25 bg-black/20 sm:aspect-video"
-      >
-        {status === "idle" && (
-          <button
-            type="button"
-            className="min-h-11 bg-amber px-5 font-semibold text-ink focus-visible:outline-amber"
-            onClick={() => setStatus("loading")}
-          >
-            Load 3D preview
-          </button>
-        )}
-        {showCanvas && (
-          <div className="absolute inset-0" aria-hidden="true">
-            <ModelErrorBoundary onError={markUnavailable}>
-              <StudioModelCanvas
-                {...view}
-                onReady={markReady}
-                onUnavailable={markUnavailable}
-              />
-            </ModelErrorBoundary>
-          </div>
-        )}
-        <p
-          role="status"
-          aria-label="3D preview status"
-          className={
-            status === "ready"
-              ? "sr-only"
-              : "pointer-events-none relative px-4 text-center text-muted empty:hidden"
-          }
+    <div
+      ref={stage}
+      className="relative grid min-h-64 place-items-center border-t border-paper/20 bg-black/25 sm:aspect-video lg:aspect-auto lg:border-t-0 lg:border-l"
+    >
+      {status === "idle" && (
+        <button
+          type="button"
+          className="min-h-11 bg-amber px-5 font-semibold text-ink focus-visible:outline-amber"
+          onClick={() => setStatus("loading")}
         >
-          {status === "loading" && "Loading studio model…"}
-          {status === "ready" && "Studio model loaded."}
-          {status === "unavailable" && "The 3D preview is unavailable."}
-        </p>
-      </div>
+          Open 3D map
+        </button>
+      )}
+      {showCanvas && (
+        <div className="absolute inset-0" aria-hidden="true">
+          <ModelErrorBoundary onError={markUnavailable}>
+            <StudioModelCanvas
+              {...view}
+              onReady={markReady}
+              onUnavailable={markUnavailable}
+            />
+          </ModelErrorBoundary>
+        </div>
+      )}
+      <p
+        role="status"
+        aria-label="3D preview status"
+        className={
+          status === "ready"
+            ? "sr-only"
+            : "pointer-events-none relative px-4 text-center text-muted empty:hidden"
+        }
+      >
+        {status === "loading" && "Loading studio model…"}
+        {status === "ready" && "Studio model loaded."}
+        {status === "unavailable" && "The 3D map is unavailable."}
+      </p>
     </div>
   );
 }

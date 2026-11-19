@@ -35,7 +35,7 @@ for (const width of [360, 768, 1440]) {
     ).toBeLessThanOrEqual(width);
     await expect(
       page.getByRole("main").getByRole("heading", { level: 2 }),
-    ).toHaveCount(14);
+    ).toHaveCount(13);
     await expect(page.getByRole("contentinfo")).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),

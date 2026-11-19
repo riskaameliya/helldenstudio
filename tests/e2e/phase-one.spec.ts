@@ -19,11 +19,12 @@ test("mobile hero navigates without overflow and respects reduced motion", async
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Enter the Hellden Universe",
   );
-  await page.getByRole("link", { name: "Studio map", exact: true }).click();
+  await page
+    .getByRole("region", { name: "Enter the Hellden Universe" })
+    .getByRole("link", { name: "Studio map", exact: true })
+    .click();
   await expect(page).toHaveURL(/#studio-preview$/);
-  await expect(
-    page.getByRole("button", { name: "Load 3D preview" }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open 3D map" })).toBeVisible();
   const layout = await page.evaluate(() => ({
     overflows: document.documentElement.scrollWidth > innerWidth,
     animations: document.getAnimations().length,
@@ -40,7 +41,7 @@ test("Chromium loads the supplied GLB on demand", async ({ page }) => {
     if (response.url().endsWith(studioModelPath))
       requests.push(response.status());
   });
-  await page.getByRole("button", { name: "Load 3D preview" }).click();
+  await page.getByRole("button", { name: "Open 3D map" }).click();
   await expect(
     page.getByRole("status", { name: "3D preview status" }),
   ).toHaveText("Studio model loaded.");
@@ -58,10 +59,10 @@ test("a failed model request leaves the preview description available", async ({
     return route.abort();
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Load 3D preview" }).click();
+  await page.getByRole("button", { name: "Open 3D map" }).click();
   await expect(
     page.getByRole("status", { name: "3D preview status" }),
-  ).toHaveText("The 3D preview is unavailable.");
+  ).toHaveText("The 3D map is unavailable.");
   expect(modelRequested).toBe(true);
   await expect(
     page.getByText("A conceptual model of the two-floor studio."),

@@ -11,8 +11,8 @@ test("editorial sections and navigation work without JavaScript", async ({
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
     for (const [label, hash] of [
-      ["Studio", "studio-preview"],
-      ["Rooms", "rooms"],
+      ["Tour", "studio-tour"],
+      ["Studio map", "studio-preview"],
       ["Gallery", "gallery"],
       ["Booking", "booking"],
     ]) {
@@ -20,7 +20,7 @@ test("editorial sections and navigation work without JavaScript", async ({
       await expect(page).toHaveURL(new RegExp("#" + hash + "$"));
       await expect(page.locator("#" + hash)).toBeVisible();
     }
-    await expect(page.locator("main section")).toHaveCount(6);
+    await expect(page.locator("main section")).toHaveCount(5);
     await page.getByRole("link", { name: "Back to top" }).click();
     await expect(page).toHaveURL(/#top$/);
   } finally {
