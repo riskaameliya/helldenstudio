@@ -37,7 +37,9 @@ test("Chromium loads the supplied GLB on demand", async ({ page }) => {
       requests.push(response.status());
   });
   await page.getByRole("button", { name: "Load 3D preview" }).click();
-  await expect(page.getByRole("status")).toHaveText("Studio model loaded.");
+  await expect(
+    page.getByRole("status", { name: "3D preview status" }),
+  ).toHaveText("Studio model loaded.");
   await expect(page.locator("canvas")).toBeVisible();
   expect(requests).toEqual([200]);
 });
@@ -52,9 +54,9 @@ test("a failed model request leaves the preview description available", async ({
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Load 3D preview" }).click();
-  await expect(page.getByRole("status")).toHaveText(
-    "The 3D preview is unavailable.",
-  );
+  await expect(
+    page.getByRole("status", { name: "3D preview status" }),
+  ).toHaveText("The 3D preview is unavailable.");
   expect(modelRequested).toBe(true);
   await expect(
     page.getByText("A conceptual model of the two-floor studio."),

@@ -1,9 +1,11 @@
 import { BookingSection } from "@/features/booking/booking-section";
 import { EditorialGallery } from "@/features/gallery/editorial-gallery";
-import { RoomIntroduction } from "@/features/room-experience/room-introduction";
-import { sectionIds } from "@/config/navigation";
 import { Hero } from "@/features/hero/hero";
-import { StudioPreview } from "@/features/studio-anatomy";
+import { StudioExploration, StudioPreview } from "@/features/studio-anatomy";
+import { readStudioRooms } from "@/features/studio-anatomy/lib/room-data";
+import roomConfig from "../../public/hellden-studio-assets-v1/room-config.json";
+
+const rooms = readStudioRooms(roomConfig);
 
 export default function Home() {
   return (
@@ -20,23 +22,9 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <section
-        id={sectionIds.studio}
-        aria-labelledby="preview-title"
-        className="site-gutter mx-auto max-w-screen-2xl border-t border-paper/25 py-14 sm:py-20"
-      >
-        <h2
-          id="preview-title"
-          className="font-display text-5xl font-bold uppercase sm:text-6xl"
-        >
-          Studio preview
-        </h2>
-        <p className="mt-3 text-muted">
-          A conceptual model of the two-floor studio.
-        </p>
+      <StudioExploration rooms={rooms}>
         <StudioPreview />
-      </section>
-      <RoomIntroduction />
+      </StudioExploration>
       <EditorialGallery />
       <BookingSection />
     </main>

@@ -59,6 +59,7 @@ export function StudioPreview() {
         )}
         <p
           role="status"
+          aria-label="3D preview status"
           className={
             status === "ready"
               ? "sr-only"
