@@ -13,10 +13,13 @@ test("mobile hero navigates without overflow and respects reduced motion", async
   });
 
   await page.goto("/");
+  await expect(page.getByRole("link", { name: "Enter studio" })).toBeInViewport(
+    { ratio: 1 },
+  );
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Enter the Hellden Universe",
   );
-  await page.getByRole("link", { name: "Explore the studio" }).click();
+  await page.getByRole("link", { name: "Studio map", exact: true }).click();
   await expect(page).toHaveURL(/#studio-preview$/);
   await expect(
     page.getByRole("button", { name: "Load 3D preview" }),

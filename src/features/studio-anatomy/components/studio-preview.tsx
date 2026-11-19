@@ -3,38 +3,13 @@
 import { studioRevealQuery } from "@/lib/motion";
 import type { StudioModelView } from "../types/rooms";
 import dynamic from "next/dynamic";
-import {
-  Component,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { ModelErrorBoundary } from "./model-error-boundary";
 
 const StudioModelCanvas = dynamic(() => import("./studio-model-canvas"), {
   ssr: false,
 });
-
-class PreviewErrorBoundary extends Component<
-  { children: ReactNode; onError: () => void },
-  { failed: boolean }
-> {
-  state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  componentDidCatch(error: Error) {
-    console.error("Studio preview failed to load", error);
-    this.props.onError();
-  }
-
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
 
 export function StudioPreview(view: StudioModelView) {
   const stage = useRef<HTMLDivElement>(null);
@@ -89,13 +64,13 @@ export function StudioPreview(view: StudioModelView) {
         )}
         {showCanvas && (
           <div className="absolute inset-0" aria-hidden="true">
-            <PreviewErrorBoundary onError={markUnavailable}>
+            <ModelErrorBoundary onError={markUnavailable}>
               <StudioModelCanvas
                 {...view}
                 onReady={markReady}
                 onUnavailable={markUnavailable}
               />
-            </PreviewErrorBoundary>
+            </ModelErrorBoundary>
           </div>
         )}
         <p

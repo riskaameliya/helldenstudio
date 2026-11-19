@@ -1,0 +1,129 @@
+"use client";
+
+import { useGLTF } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  type RefObject,
+} from "react";
+import { Mesh, PerspectiveCamera } from "three";
+import {
+  modelNodeFloor,
+  modelNodeName,
+  toScenePoint,
+} from "@/features/studio-anatomy/lib/model-view";
+import {
+  studioModelPath,
+  studioModelRotation,
+} from "@/features/studio-anatomy/lib/studio-model";
+import { gsap, reducedMotionQuery, ScrollTrigger } from "@/lib/motion";
+import { walkthroughPose } from "./walkthrough-route";
+import type { WalkthroughStop } from "./walkthrough-stops";
+
+type WalkthroughCanvasProps = {
+  tour: RefObject<HTMLElement | null>;
+  stops: WalkthroughStop[];
+  onReady: () => void;
+  onUnavailable: () => void;
+};
+
+function GroundFloor({
+  tour,
+  stops,
+  onReady,
+  onUnavailable,
+}: WalkthroughCanvasProps) {
+  const { scene } = useGLTF(studioModelPath, false, false);
+  const camera = useThree((state) => state.camera);
+  const invalidate = useThree((state) => state.invalidate);
+  const gl = useThree((state) => state.gl);
+  const get = useThree((state) => state.get);
+  const { width, height } = useThree((state) => state.size);
+
+  useLayoutEffect(() => {
+    const { camera } = get();
+    if (!(camera instanceof PerspectiveCamera) || !height || !width) return;
+    // Matches the CSS doorway width cap on narrow canvases.
+    camera.zoom = Math.min(1, (width * 0.86) / (height * 0.515));
+    camera.updateProjectionMatrix();
+    invalidate();
+  }, [get, height, invalidate, width]);
+
+  const model = useMemo(() => {
+    const clone = scene.clone();
+    clone.rotation.x = studioModelRotation;
+    // Keep the slab above the rooms as their ceiling.
+    clone.traverse((node) => {
+      if (node instanceof Mesh) {
+        const name = modelNodeName(node);
+        node.visible = name === "floor2_base" || modelNodeFloor(name) === 1;
+      }
+    });
+    return clone;
+  }, [scene]);
+
+  useLayoutEffect(() => {
+    const element = tour.current;
+    const finalChapter = element?.querySelector("[data-last-stop]");
+    if (!element || !finalChapter) return;
+    const motion = window.matchMedia(reducedMotionQuery);
+    gsap.registerPlugin(ScrollTrigger);
+
+    const renderPose = (progress: number) => {
+      const { position, target } = walkthroughPose(
+        stops,
+        progress * stops.length,
+        motion.matches,
+      );
+      camera.position.copy(toScenePoint(position));
+      camera.lookAt(toScenePoint(target));
+      invalidate();
+    };
+    const trigger = ScrollTrigger.create({
+      trigger: element,
+      start: "top top",
+      endTrigger: finalChapter,
+      end: "top top",
+      onUpdate: ({ progress }) => renderPose(progress),
+      onRefresh: ({ progress }) => renderPose(progress),
+    });
+    const sync = () => renderPose(trigger.progress);
+    sync();
+    motion.addEventListener("change", sync);
+    return () => {
+      motion.removeEventListener("change", sync);
+      trigger.kill();
+    };
+  }, [camera, invalidate, stops, tour]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    canvas.addEventListener("webglcontextlost", onUnavailable);
+    return () => canvas.removeEventListener("webglcontextlost", onUnavailable);
+  }, [gl, onUnavailable]);
+
+  useEffect(onReady, [onReady]);
+
+  return <primitive object={model} dispose={null} />;
+}
+
+export default function WalkthroughCanvas(props: WalkthroughCanvasProps) {
+  return (
+    <Canvas
+      camera={{ fov: 66, near: 0.045, far: 80 }}
+      dpr={[1, 1.5]}
+      frameloop="demand"
+    >
+      <color attach="background" args={["#1c1512"]} />
+      <ambientLight intensity={0.65} />
+      <hemisphereLight args={["#ffe6cb", "#77655a", 2]} />
+      <directionalLight position={[6, 7, 5]} intensity={1.5} />
+      <Suspense fallback={null}>
+        <GroundFloor {...props} />
+      </Suspense>
+    </Canvas>
+  );
+}

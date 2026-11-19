@@ -5,8 +5,6 @@ test("studio lights apply to every page section and can be toggled from the foot
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const hero = page.getByRole("region", { name: "Enter the Hellden Universe" });
-  const heroLights = hero.getByRole("button", { name: "Studio lights" });
   const footerLights = page
     .getByRole("contentinfo")
     .getByRole("button", { name: "Studio lights" });
@@ -18,23 +16,22 @@ test("studio lights apply to every page section and can be toggled from the foot
       );
 
   await expect.poll(readLights).toEqual(Array(8).fill("1"));
-  await expect(heroLights).toHaveAttribute("aria-pressed", "true");
+  await expect(footerLights).toHaveAttribute("aria-pressed", "true");
 
   const manifesto = page.getByRole("region", {
     name: "Make a frame of your own.",
   });
   const litManifesto = await manifesto.screenshot();
 
-  await heroLights.focus();
+  await footerLights.focus();
   await page.keyboard.press("Space");
-  await expect(heroLights).toHaveAttribute("aria-pressed", "false");
   await expect(footerLights).toHaveAttribute("aria-pressed", "false");
   await expect.poll(readLights).toEqual(Array(8).fill("0"));
   const unlitManifesto = await manifesto.screenshot();
   expect(unlitManifesto.equals(litManifesto)).toBe(false);
 
   await footerLights.click();
-  await expect(heroLights).toHaveAttribute("aria-pressed", "true");
+  await expect(footerLights).toHaveAttribute("aria-pressed", "true");
   await expect.poll(readLights).toEqual(Array(8).fill("1"));
 
   await expect(
