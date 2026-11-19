@@ -1,6 +1,6 @@
 # Hellden Studio implementation plan
 
-**Status: proposed, awaiting approval.** This phase delivers documentation and engineering instructions. Application changes and dependency installation begin after approval.
+**Status: local release QA performed.** See the [release QA report](release-qa.md) for verified checks and the items still open for public release.
 
 ## Roadmap
 

@@ -13,7 +13,7 @@ export function Hero() {
         </h1>
         <a
           href={`#${sectionIds.studio}`}
-          className="mt-8 inline-flex min-h-11 items-center gap-5 border-b border-amber py-2 text-amber hover:text-paper"
+          className="mt-8 inline-flex min-h-11 items-center gap-5 border-b border-amber py-2 text-paper hover:underline underline-offset-4"
         >
           Explore the studio <span aria-hidden="true">↓</span>
         </a>

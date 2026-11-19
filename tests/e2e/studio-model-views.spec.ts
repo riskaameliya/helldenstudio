@@ -59,3 +59,33 @@ test("choosing a floor with WebGL disabled keeps the room controls usable", asyn
     page.getByRole("status", { name: "Studio selection" }),
   ).toHaveText("Cinema");
 });
+
+test("losing the renderer context preserves room selection and HTML controls", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const studio = page.getByRole("region", { name: "Studio preview" });
+  await studio.getByRole("button", { name: "Floor 2" }).click();
+  const status = studio.getByRole("status", { name: "3D preview status" });
+  await expect(status).toHaveText("Studio model loaded.");
+  const contextLost = await studio.locator("canvas").evaluate((element) => {
+    const extension = (element as HTMLCanvasElement)
+      .getContext("webgl2")
+      ?.getExtension("WEBGL_lose_context");
+    extension?.loseContext();
+    return Boolean(extension);
+  });
+  expect(contextLost).toBe(true);
+  await expect(status).toHaveText("The 3D preview is unavailable.");
+  await expect(studio.getByRole("button", { name: "Floor 2" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page
+    .getByRole("button", { name: "DIY Self Photo", exact: true })
+    .click();
+  await expect(
+    studio.getByRole("status", { name: "Studio selection" }),
+  ).toHaveText("DIY Self Photo");
+});
