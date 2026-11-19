@@ -278,3 +278,23 @@ test("Cinema holds the camera and scrolls all three photos", async ({
     cinema.getByRole("heading", { name: "Hellden Cinema" }),
   ).toBeInViewport();
 });
+
+test("Hellden Record shows its session offer and photo stack", async ({
+  page,
+}) => {
+  await page.goto("/#tour-record_l1");
+  const record = page.locator("#tour-record_l1");
+  await expect(
+    record.getByRole("heading", { name: "Hellden Record" }),
+  ).toBeInViewport();
+  await expect(record.getByText("40k/session")).toBeVisible();
+  await expect(
+    record
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveCount(4);
+  await expect(record.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = record.getByRole("complementary", { name: "Record gallery" });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+});

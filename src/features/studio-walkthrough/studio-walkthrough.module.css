@@ -313,6 +313,12 @@
   min-height: calc(var(--chapter-height) + var(--photo-count) * 66svh);
 }
 
+@media (scripting: enabled) {
+  .galleryChapter {
+    min-height: calc(var(--chapter-height) + var(--photo-count) * 66svh);
+  }
+}
+
 .galleryLayout {
   gap: clamp(1rem, 3vw, 3rem);
 }

@@ -50,7 +50,29 @@ const cinemaPhotos = [
   },
 ];
 
+const recordPhotos = [
+  {
+    src: "/images/record/record-2.jpeg",
+    alt: "Portrait of a guest on the sofa in the wood-paneled Record set",
+    width: 922,
+    height: 1336,
+  },
+  {
+    src: "/images/record/record-1.jpeg",
+    alt: "Guest on the leather sofa beside the Hellden Record vinyl display",
+    width: 980,
+    height: 1384,
+  },
+  {
+    src: "/images/record/record-3.jpeg",
+    alt: "Guest posing beside the record sleeves and turntable",
+    width: 958,
+    height: 1368,
+  },
+];
+
 export const roomPhotos: Partial<Record<RoomId, RoomPhoto[]>> = {
   portrait_l1: portraitPhotos,
   cinema_l1: cinemaPhotos,
+  record_l1: recordPhotos,
 };

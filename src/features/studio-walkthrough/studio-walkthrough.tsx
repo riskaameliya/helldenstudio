@@ -25,9 +25,10 @@ const WalkthroughCanvas = dynamic(() => import("./walkthrough-canvas"), {
 
 const entranceId = "tour-entrance";
 
-const sessionPrices = new Map([
-  ["portrait_l1", 35],
-  ["cinema_l1", 40],
+const sessions = new Map([
+  ["portrait_l1", { title: "Hellden Portrait", price: 35 }],
+  ["cinema_l1", { title: "Hellden Cinema", price: 40 }],
+  ["record_l1", { title: "Hellden Record", price: 40 }],
 ]);
 
 function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {
@@ -263,16 +264,14 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
 
         {stops.map((room, index) => {
           const photos = roomPhotos[room.id];
-          const sessionPrice = sessionPrices.get(room.id);
+          const session = sessions.get(room.id);
           const roomCard = (
             <div className={styles.roomCard}>
               <p className="mb-2 text-sm text-amber">Floor {room.floor}</p>
               <h2 className={styles.roomTitle}>
-                {room.id === "cinema_l1" ? "Hellden Cinema" : room.name}
+                {session?.title ?? room.name}
               </h2>
-              {sessionPrice !== undefined && (
-                <RoomSession price={sessionPrice} />
-              )}
+              {session && <RoomSession price={session.price} />}
               <details className="mt-4">
                 <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
                   Look around
