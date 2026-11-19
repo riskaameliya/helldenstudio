@@ -8,7 +8,7 @@ export const roomNames = {
   waiting_l1: "Waiting area",
   diy_l1: "DIY photography area",
   beverage_l1: "Beverage area",
-  self_photo_portrait_l2: "Customizable Self Photo Portrait",
+  self_photo_portrait_l2: "Self Photo Pass",
   operator_cashier_l2: "Operator / Cashier",
   diy_self_photo_l2: "DIY Self Photo",
 } as const;

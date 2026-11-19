@@ -131,11 +131,32 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   await expect.poll(async () => (await stageShot()).equals(stairs)).toBe(false);
 
   await menu.click();
-  await nav
-    .getByRole("link", { name: "Customizable Self Photo Portrait" })
-    .click();
+  await nav.getByRole("link", { name: "Self Photo Pass" }).click();
   const portrait = page.locator("#tour-self_photo_portrait_l2");
-  await expect(portrait.getByRole("heading")).toBeInViewport();
+  await expect(
+    portrait.getByRole("heading", { name: "Self Photo Pass" }),
+  ).toBeInViewport();
+  await expect(portrait.getByText("40k/session")).toBeVisible();
+  await expect(portrait.getByText("+15k for DIY passport")).toBeVisible();
+  const gallery = portrait.getByRole("complementary", {
+    name: "Self Photo Pass gallery",
+  });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
   await portrait.getByText("Look around", { exact: true }).click();
   await expect(
     portrait.getByText(/backdrop, camera, and studio lights/),

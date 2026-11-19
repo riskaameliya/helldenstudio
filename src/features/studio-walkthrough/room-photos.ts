@@ -93,9 +93,31 @@ const expressPhotos = [
   },
 ];
 
+const selfPhotoPassPhotos = [
+  {
+    src: "/images/self/self-1.jpeg",
+    alt: "Blue Star Series layout with two strips of self portraits",
+    width: 1078,
+    height: 1408,
+  },
+  {
+    src: "/images/self/self-2.jpeg",
+    alt: "Side-by-side portraits with Rainbow and Blue Star backgrounds",
+    width: 1036,
+    height: 1330,
+  },
+  {
+    src: "/images/self/self-3.jpeg",
+    alt: "Four Rainbow self portraits arranged on a pink layout",
+    width: 1044,
+    height: 1364,
+  },
+];
+
 export const roomPhotos: Partial<Record<RoomId, RoomPhoto[]>> = {
   portrait_l1: portraitPhotos,
   cinema_l1: cinemaPhotos,
   record_l1: recordPhotos,
   express_l1: expressPhotos,
+  self_photo_portrait_l2: selfPhotoPassPhotos,
 };
