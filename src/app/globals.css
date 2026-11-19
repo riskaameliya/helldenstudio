@@ -24,3 +24,51 @@ body {
   letter-spacing: -0.025em;
   text-transform: uppercase;
 }
+
+[data-light-surface] {
+  position: relative;
+  isolation: isolate;
+  --surface-light: #ffad6350;
+}
+
+[data-light-surface="paper"] {
+  --surface-light: #a84b3f4d;
+}
+
+[data-light-surface="oxblood"] {
+  --surface-light: #ffad6333;
+}
+
+[data-light-surface]::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(
+    ellipse at 70% 45%,
+    var(--surface-light) 0%,
+    transparent 72%
+  );
+  opacity: 0;
+}
+
+[data-studio-lights="on"] [data-light-surface]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-light-surface]::after {
+    transition: opacity 250ms ease-out;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-light-surface]::after {
+    background: radial-gradient(
+      ellipse 34rem 23rem at var(--light-x, 70%) var(--light-y, 45%),
+      var(--surface-light),
+      transparent
+    );
+  }
+}

@@ -20,6 +20,7 @@ export function RoomIndex({
 }: RoomIndexProps) {
   return (
     <section
+      data-light-surface="paper"
       id={sectionIds.rooms}
       aria-labelledby="rooms-title"
       className="bg-paper text-ink"
@@ -67,7 +68,7 @@ export function RoomIndex({
                         type="button"
                         aria-pressed={activeRoom?.id === room.id}
                         onClick={() => onSelect(room)}
-                        className="min-h-11 w-full px-2 py-2 text-left hover:text-oxblood aria-pressed:bg-oxblood aria-pressed:text-paper"
+                        className="min-h-11 w-full px-2 py-2 text-left hover:bg-oxblood/10 hover:text-oxblood focus-visible:bg-oxblood/10 aria-pressed:bg-oxblood aria-pressed:text-paper"
                       >
                         {room.name}
                       </button>

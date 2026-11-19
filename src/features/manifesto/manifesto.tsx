@@ -29,6 +29,7 @@ export function Manifesto() {
 
   return (
     <section
+      data-light-surface="paper"
       ref={section}
       aria-labelledby="manifesto-title"
       className="bg-paper text-ink"

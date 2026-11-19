@@ -1,8 +1,11 @@
 import { sectionIds } from "@/config/navigation";
 
+import { studioInstagram } from "@/config/site";
+
 export function BookingSection() {
   return (
     <section
+      data-light-surface="oxblood"
       id={sectionIds.booking}
       aria-labelledby="booking-title"
       className="bg-oxblood"
@@ -11,7 +14,15 @@ export function BookingSection() {
         <h2 id="booking-title" className="editorial-title">
           Book a session
         </h2>
-        <p>Booking details are coming soon.</p>
+        <div>
+          <p>Booking details are coming soon.</p>
+          <a
+            href={studioInstagram.url}
+            className="mt-3 inline-flex min-h-11 items-center gap-3 underline underline-offset-4 hover:decoration-2"
+          >
+            Contact Hellden on Instagram <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </div>
     </section>
   );

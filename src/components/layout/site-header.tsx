@@ -4,7 +4,7 @@ import { site } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-paper/20">
+    <header data-light-surface className="border-b border-paper/20">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-10 focus:bg-ink focus:p-4"
@@ -23,7 +23,7 @@ export function SiteHeader() {
             {navigation.map(({ label, href }) => (
               <li key={href}>
                 <a
-                  className="flex min-h-11 items-center text-sm hover:text-amber"
+                  className="flex min-h-11 items-center text-sm underline-offset-4 hover:text-amber hover:underline focus-visible:underline"
                   href={href}
                 >
                   {label}

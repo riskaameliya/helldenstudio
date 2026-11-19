@@ -26,6 +26,7 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
   return (
     <>
       <section
+        data-light-surface
         id={sectionIds.studio}
         aria-labelledby="preview-title"
         className="site-gutter mx-auto max-w-screen-2xl border-t border-paper/25 py-14 sm:py-20"
