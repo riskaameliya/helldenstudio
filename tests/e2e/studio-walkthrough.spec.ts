@@ -105,3 +105,39 @@ test("scroll opens the door before showing the corridor and closes it on return"
   await expect.poll(angle).toBe(0);
   await expect(door).toHaveCSS("transform", closed);
 });
+
+test("the stairs lead to the upper floor and the upper sets are reachable from the menu", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await page.goto("/");
+  const tour = page.getByRole("region", { name: "Enter the Hellden Universe" });
+  const menu = tour.getByText("Choose a room", { exact: true });
+  const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
+  await menu.click();
+  await nav.getByRole("link", { name: "Stairs", exact: true }).click();
+  await expect(page).toHaveURL(/#tour-stairs_l1$/);
+  await expect(
+    tour.getByRole("status", { name: "Walkthrough view" }),
+  ).toHaveText("Walkthrough view loaded.");
+  const stageShot = () =>
+    page.screenshot({ clip: { x: 740, y: 175, width: 350, height: 350 } });
+  const stairs = await stageShot();
+  await page.getByRole("link", { name: "Continue upstairs" }).click();
+  await expect(page).toHaveURL(/#tour-diy_self_photo_l2$/);
+  const diy = page.locator("#tour-diy_self_photo_l2");
+  await expect(diy.getByRole("heading")).toBeInViewport();
+  await expect(diy.getByText("Floor 2", { exact: true })).toBeInViewport();
+  await expect.poll(async () => (await stageShot()).equals(stairs)).toBe(false);
+
+  await menu.click();
+  await nav
+    .getByRole("link", { name: "Customizable Self Photo Portrait" })
+    .click();
+  const portrait = page.locator("#tour-self_photo_portrait_l2");
+  await expect(portrait.getByRole("heading")).toBeInViewport();
+  await portrait.getByText("Look around", { exact: true }).click();
+  await expect(
+    portrait.getByText(/backdrop, camera, and studio lights/),
+  ).toBeVisible();
+});

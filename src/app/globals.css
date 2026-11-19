@@ -31,6 +31,10 @@ body {
   --surface-light: #ffad6350;
 }
 
+[data-light-surface="entrance"] {
+  --surface-light: transparent;
+}
+
 [data-light-surface="paper"] {
   --surface-light: #a84b3f4d;
 }

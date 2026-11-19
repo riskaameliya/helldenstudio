@@ -30,7 +30,7 @@ type WalkthroughCanvasProps = {
   onUnavailable: () => void;
 };
 
-function GroundFloor({
+function StudioTourScene({
   tour,
   stops,
   onReady,
@@ -55,11 +55,11 @@ function GroundFloor({
   const model = useMemo(() => {
     const clone = scene.clone();
     clone.rotation.x = studioModelRotation;
-    // Keep the slab above the rooms as their ceiling.
+    // Both floors share the existing model. Hide only the roof outline.
     clone.traverse((node) => {
       if (node instanceof Mesh) {
         const name = modelNodeName(node);
-        node.visible = name === "floor2_base" || modelNodeFloor(name) === 1;
+        node.visible = modelNodeFloor(name) !== undefined;
       }
     });
     return clone;
@@ -122,7 +122,7 @@ export default function WalkthroughCanvas(props: WalkthroughCanvasProps) {
       <hemisphereLight args={["#ffe6cb", "#77655a", 2]} />
       <directionalLight position={[6, 7, 5]} intensity={1.5} />
       <Suspense fallback={null}>
-        <GroundFloor {...props} />
+        <StudioTourScene {...props} />
       </Suspense>
     </Canvas>
   );

@@ -9,6 +9,7 @@ import {
   type MouseEvent,
 } from "react";
 import { sectionIds } from "@/config/navigation";
+import { floors } from "@/features/studio-anatomy/types/rooms";
 import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-error-boundary";
 import { entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
@@ -127,17 +128,24 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
             <a href={`#${entranceId}`} onClick={closeRoomMenu}>
               Entrance
             </a>
-            {stops.map((room) => (
-              <a
-                key={room.id}
-                href={`#${tourChapterId(room.id)}`}
-                onClick={(event) => {
-                  requestScene();
-                  closeRoomMenu(event);
-                }}
-              >
-                {room.name}
-              </a>
+            {floors.map((floor) => (
+              <div key={floor} className={styles.roomMenuGroup}>
+                <p>Floor {floor}</p>
+                {stops
+                  .filter((room) => room.floor === floor)
+                  .map((room) => (
+                    <a
+                      key={room.id}
+                      href={`#${tourChapterId(room.id)}`}
+                      onClick={(event) => {
+                        requestScene();
+                        closeRoomMenu(event);
+                      }}
+                    >
+                      {room.name}
+                    </a>
+                  ))}
+              </div>
             ))}
           </nav>
         </details>
@@ -199,9 +207,18 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
                 </summary>
                 <p className="max-w-sm pb-4 text-paper">{room.detail}</p>
               </details>
-              <a className={styles.textLink} href={`#${sectionIds.gallery}`}>
-                See studio photos
-              </a>
+              {room.id === "stairs_l1" ? (
+                <a
+                  className={styles.textLink}
+                  href={`#${tourChapterId("diy_self_photo_l2")}`}
+                >
+                  Continue upstairs
+                </a>
+              ) : (
+                <a className={styles.textLink} href={`#${sectionIds.gallery}`}>
+                  See studio photos
+                </a>
+              )}
               {index === stops.length - 1 && (
                 <a
                   className={`${styles.textLink} ml-4`}
