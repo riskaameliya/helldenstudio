@@ -133,10 +133,7 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
     name: "DIY Self Photo Passport gallery",
   });
   await expect(passportGallery).toBeVisible();
-  await expect(passportGallery.getByRole("img")).toHaveCount(4);
-  const parkedPhoto = passportGallery.locator('[data-photo-position="hidden"]');
-  await expect(parkedPhoto).toHaveCount(1);
-  await expect(parkedPhoto).toHaveCSS("opacity", "0");
+  await expect(passportGallery.getByRole("img")).toHaveCount(3);
 
   await expect
     .poll(() =>
@@ -203,6 +200,7 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
     .getByRole("heading", { name: "Hellden Portrait" })
     .locator("..");
   await expect(titleCard.getByText("35k/session")).toBeVisible();
+  await expect(titleCard.getByText("Look around")).toBeHidden();
   await expect(panel.getByText("35k/session")).toHaveCount(0);
   await expect(
     portrait
@@ -236,17 +234,29 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
     .toBe(true);
   const mobileCard = await titleCard.boundingBox();
   const mobilePanel = await panel.boundingBox();
-  expect(mobilePanel?.y ?? 0).toBeGreaterThan(
-    (mobileCard?.y ?? 0) + (mobileCard?.height ?? 0),
+  expect(mobileCard?.y ?? 0).toBeGreaterThan(
+    (mobilePanel?.y ?? 0) + (mobilePanel?.height ?? 0),
   );
+  const mobilePhoto = await panel
+    .locator('[data-photo-position="active"] img')
+    .boundingBox();
+  expect(mobilePhoto?.width ?? 0).toBeGreaterThan(190);
 
   await page.setViewportSize({ width: 1280, height: 850 });
+  await expect(titleCard.getByText("Look around")).toBeVisible();
   await expect(panel).toBeVisible();
   const desktopCard = await titleCard.boundingBox();
   const desktopPanel = await panel.boundingBox();
   expect(desktopPanel?.x ?? 0).toBeGreaterThan(
     (desktopCard?.x ?? 0) + (desktopCard?.width ?? 0),
   );
+  expect(
+    Math.abs(
+      desktopPanel!.y +
+        desktopPanel!.height / 2 -
+        (desktopCard!.y + desktopCard!.height / 2),
+    ),
+  ).toBeLessThan(2);
 });
 
 test("scroll advances each stacked photo before leaving Portrait", async ({

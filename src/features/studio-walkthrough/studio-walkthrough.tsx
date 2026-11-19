@@ -281,7 +281,9 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           const session = sessions.get(room.id);
           const roomCard = (
             <div className={styles.roomCard}>
-              <p className="mb-2 text-sm text-amber">Floor {room.floor}</p>
+              <p className="mb-2 text-sm text-amber max-md:mb-1 max-md:text-xs">
+                Floor {room.floor}
+              </p>
               <h2 className={styles.roomTitle}>
                 {session?.title ?? room.name}
               </h2>
@@ -291,7 +293,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
                   passportAddOn={session.passportAddOn}
                 />
               )}
-              <details className="mt-4">
+              <details className={styles.roomDetails}>
                 <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
                   Look around
                 </summary>

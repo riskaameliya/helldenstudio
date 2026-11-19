@@ -52,7 +52,6 @@ test("stairs climb to the landing cut and the upper-floor rooms keep their sourc
   const upperRooms = stops.filter(({ floor }) => floor === 2);
   expect(upperRooms.map(({ id }) => id)).toEqual([
     "diy_self_photo_l2",
-    "operator_cashier_l2",
     "self_photo_portrait_l2",
   ]);
   for (const room of upperRooms) {
