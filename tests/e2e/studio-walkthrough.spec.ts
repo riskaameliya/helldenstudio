@@ -298,3 +298,44 @@ test("Hellden Record shows its session offer and photo stack", async ({
   await expect(gallery).toBeVisible();
   await expect(gallery.getByRole("img")).toHaveCount(3);
 });
+
+test("Hellden Express shows its session inclusions and photo stack", async ({
+  page,
+}) => {
+  await page.goto("/#tour-express_l1");
+  const express = page.locator("#tour-express_l1");
+  await expect(
+    express.getByRole("heading", { name: "Hellden Express" }),
+  ).toBeInViewport();
+  await expect(express.getByText("40k/session")).toBeVisible();
+  await expect(
+    express
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(express.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = express.getByRole("complementary", {
+    name: "Express gallery",
+  });
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+});

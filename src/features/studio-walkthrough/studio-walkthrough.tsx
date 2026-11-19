@@ -29,6 +29,7 @@ const sessions = new Map([
   ["portrait_l1", { title: "Hellden Portrait", price: 35 }],
   ["cinema_l1", { title: "Hellden Cinema", price: 40 }],
   ["record_l1", { title: "Hellden Record", price: 40 }],
+  ["express_l1", { title: "Hellden Express", price: 40 }],
 ]);
 
 function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {

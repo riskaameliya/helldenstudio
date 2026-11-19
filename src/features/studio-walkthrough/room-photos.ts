@@ -71,8 +71,31 @@ const recordPhotos = [
   },
 ];
 
+const expressPhotos = [
+  {
+    src: "/images/express/express-2.jpeg",
+    alt: "Guest seated by the train window in the Express set",
+    width: 940,
+    height: 1384,
+  },
+  {
+    src: "/images/express/express-1.jpeg",
+    alt: "Guest holding a strap in the Hellden Express train set",
+    width: 970,
+    height: 1386,
+  },
+
+  {
+    src: "/images/express/express-3.jpeg",
+    alt: "Full-length portrait with the train window and overhead straps",
+    width: 1010,
+    height: 1390,
+  },
+];
+
 export const roomPhotos: Partial<Record<RoomId, RoomPhoto[]>> = {
   portrait_l1: portraitPhotos,
   cinema_l1: cinemaPhotos,
   record_l1: recordPhotos,
+  express_l1: expressPhotos,
 };
