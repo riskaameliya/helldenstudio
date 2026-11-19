@@ -1,0 +1,13 @@
+@theme {
+  --color-ink: #151311;
+  --color-paper: #f3e9d8;
+  --color-muted: #c4b8a9;
+  --color-oxblood: #8f2d36;
+  --color-amber: #ffad63;
+  --font-sans: "Inter Variable", Arial, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+
+:root {
+  --page-gutter: clamp(1rem, 5vw, 5rem);
+}

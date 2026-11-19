@@ -1,0 +1,32 @@
+# Architecture
+
+## Repository baseline
+
+The repository contains the Next.js starter at root `app/`, with starter metadata, Geist fonts and sample SVGs. `package.json` declares Next 16.4.6, React and React DOM 19.3.0, Tailwind 4.3.3, TypeScript 5, and ESLint 9. Strict TypeScript is enabled and `@/*` currently targets the repository root. Three.js, React Three Fiber (R3F), Drei, GSAP, Vitest, Playwright, and Prettier are not declared. The current `.gitignore` excludes `.agents`.
+
+Use App Router and the agreed `src/` structure. Move the root `app/` in one change because Next ignores `src/app/` while root `app/` exists. Update `@/*` to `./src/*` alongside it. Keep `public/` and project configuration at the root. Consult the installed Next.js guides for `src-folder`, Server and Client Components, lazy loading, Vitest, and Playwright.
+
+| Location                                                             | Responsibility                                                                                                                                                         |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/{layout,page,globals}`                                      | Site metadata, fonts, top-level CSS and home composition. Server Components by default.                                                                                |
+| `src/components/{ui,layout}`                                         | Reusable controls, header, and footer.                                                                                                                                 |
+| `src/features/{hero,studio-anatomy,room-experience,gallery,booking}` | Feature-local UI. Compose the manifesto in the page until it requires its own module.                                                                                  |
+| `src/features/studio-anatomy/{components,hooks,lib,types,index.ts}`  | HTML interaction shell, lazy scene, camera motion, validated scene data adapter and public feature entry.                                                              |
+| `src/config/{site,navigation,rooms}.ts`                              | Verified site and navigation values, room copy indexed by authoritative IDs. Keep the source coordinates in JSON.                                                      |
+| `src/{hooks,lib,styles,types}`                                       | Shared modules when used across features.                                                                                                                              |
+| `public/{models,images,textures,fonts}`                              | Production web assets. Preserve the supplied pack as source material during planning.                                                                                  |
+| `tests/{unit,e2e}`                                                   | Pure logic and browser flows.                                                                                                                                          |
+| `.agents/skills/`                                                    | Current workspace skills. The separately requested `brand-guardian` is a future addition. Decide how to share project-specific skills before changing the ignore rule. |
+
+## Anatomy data and rendering
+
+- Parse the supplied room JSON at the server/build boundary. Validate all 12 unique IDs, floors 1 and 2, finite ordered bounds, and finite 3D centers and targets. Preserve a typed room-ID union derived from the canonical dataset or checked against it. Pass only serializable data to the client.
+- Keep one local selection state with three shapes: building, floor with floor ID, and room with room ID. Derive the active floor for room mode from its room record. The anatomy shell and room detail share this state. Canvas hits and HTML buttons dispatch the same selection. A same-floor selection clears room focus, and “Back to building” restores overview.
+- Put R3F and Drei behind a lazy Client Component boundary. Request the scene near the section or on explicit exploration. Reserve a stable aspect ratio and keep the room index, controls and descriptions usable in HTML during loading, no-WebGL mode, model errors, and context loss. With JavaScript disabled, expose a readable floor and room index.
+- The v1 GLB is empirically Z-up, based on slab bounds. Apply one `-90°` X rotation to the scene root and use the same transform for metadata, mapping `(x, depth, height)` to `(x, height, -depth)`. Test the front and left/right from the chosen camera, the apparent vertical stacking, and every room target against the floor mesh. Confirm GLB axis conventions anew if the asset is replaced. [glTF coordinate convention](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units)
+- Keep the built-in open-front cutaway. Map named nodes to the two floor groups and shell, including props and beams. In floor mode hide occluding geometry outside the selected floor. Keep it available for the overview and avoid destructive edits to the source. Highlight the selected room through its existing floor mesh with scoped material state plus the corresponding HTML selection.
+- Use a fitted orthographic overview and room framing for a legible architectural cutaway. Keep camera targets sourced from JSON. Fit camera bounds on resize with conservative margins. GSAP owns the camera interpolation through one controller. Use bounded DPR and on-demand rendering, invalidating during transitions. Dispose owned scene resources and keep loader-cached geometry reusable.
+
+## Dependencies
+
+Keep the existing runtime and Tailwind. After approval, verify stable package versions against the installed React major, Three.js peer ranges for R3F and Drei, and the Node requirements for Next, Vitest and Playwright. Use R3F v9 as the React 19 compatibility starting point, and pin the verified set in the lockfile. Add Three.js and its TypeScript types as needed, Drei for GLB loading, and GSAP with its bundled ScrollTrigger. Add Vitest, Playwright and Prettier for their assigned checks. Leave Motion for React, Lenis, and Zustand out of the proposed baseline. [R3F installation and React compatibility](https://r3f.docs.pmnd.rs/getting-started/installation)

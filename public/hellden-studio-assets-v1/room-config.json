@@ -1,0 +1,308 @@
+{
+  "units": "conceptual; not surveyed meters",
+  "axes": "x left-to-right, y entrance-to-rear, z vertical",
+  "entrance": "front y=0",
+  "floors": 2,
+  "rooms": [
+    {
+      "id": "kasir_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          4.2
+        ],
+        "y": [
+          0.8,
+          2.9
+        ]
+      },
+      "center": [
+        2.2,
+        1.85,
+        1.2
+      ],
+      "cameraTarget": [
+        2.2,
+        1.85,
+        1.2
+      ],
+      "material": "#625C58"
+    },
+    {
+      "id": "portrait_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          4.2
+        ],
+        "y": [
+          2.9,
+          5.55
+        ]
+      },
+      "center": [
+        2.2,
+        4.22,
+        1.2
+      ],
+      "cameraTarget": [
+        2.2,
+        4.22,
+        1.2
+      ],
+      "material": "#873F3D"
+    },
+    {
+      "id": "cinema_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          4.2
+        ],
+        "y": [
+          5.55,
+          8.2
+        ]
+      },
+      "center": [
+        2.2,
+        6.88,
+        1.2
+      ],
+      "cameraTarget": [
+        2.2,
+        6.88,
+        1.2
+      ],
+      "material": "#5A3337"
+    },
+    {
+      "id": "record_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          4.2
+        ],
+        "y": [
+          8.2,
+          10.9
+        ]
+      },
+      "center": [
+        2.2,
+        9.55,
+        1.2
+      ],
+      "cameraTarget": [
+        2.2,
+        9.55,
+        1.2
+      ],
+      "material": "#704D3C"
+    },
+    {
+      "id": "express_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          4.2
+        ],
+        "y": [
+          10.9,
+          13.6
+        ]
+      },
+      "center": [
+        2.2,
+        12.25,
+        1.2
+      ],
+      "cameraTarget": [
+        2.2,
+        12.25,
+        1.2
+      ],
+      "material": "#657A87"
+    },
+    {
+      "id": "stairs_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          0.2,
+          3.05
+        ],
+        "y": [
+          15.25,
+          15.85
+        ]
+      },
+      "center": [
+        1.62,
+        15.55,
+        1.2
+      ],
+      "cameraTarget": [
+        1.62,
+        15.55,
+        1.2
+      ],
+      "material": "#99938D"
+    },
+    {
+      "id": "waiting_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          7,
+          9.8
+        ],
+        "y": [
+          0.9,
+          4.1
+        ]
+      },
+      "center": [
+        8.4,
+        2.5,
+        1.2
+      ],
+      "cameraTarget": [
+        8.4,
+        2.5,
+        1.2
+      ],
+      "material": "#897C70"
+    },
+    {
+      "id": "diy_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          7,
+          9.8
+        ],
+        "y": [
+          4.9,
+          12.35
+        ]
+      },
+      "center": [
+        8.4,
+        8.62,
+        1.2
+      ],
+      "cameraTarget": [
+        8.4,
+        8.62,
+        1.2
+      ],
+      "material": "#B59AA6"
+    },
+    {
+      "id": "beverage_l1",
+      "floor": 1,
+      "bounds": {
+        "x": [
+          5.85,
+          9.8
+        ],
+        "y": [
+          13.3,
+          15.85
+        ]
+      },
+      "center": [
+        7.83,
+        14.57,
+        1.2
+      ],
+      "cameraTarget": [
+        7.83,
+        14.57,
+        1.2
+      ],
+      "material": "#9A7858"
+    },
+    {
+      "id": "self_photo_portrait_l2",
+      "floor": 2,
+      "bounds": {
+        "x": [
+          2.05,
+          7.75
+        ],
+        "y": [
+          0.85,
+          3.05
+        ]
+      },
+      "center": [
+        4.9,
+        1.95,
+        5.45
+      ],
+      "cameraTarget": [
+        4.9,
+        1.95,
+        5.45
+      ],
+      "material": "#B5A2B9"
+    },
+    {
+      "id": "operator_cashier_l2",
+      "floor": 2,
+      "bounds": {
+        "x": [
+          0.2,
+          3.0
+        ],
+        "y": [
+          6.3,
+          10.5
+        ]
+      },
+      "center": [
+        1.6,
+        8.4,
+        5.45
+      ],
+      "cameraTarget": [
+        1.6,
+        8.4,
+        5.45
+      ],
+      "material": "#9A8D80"
+    },
+    {
+      "id": "diy_self_photo_l2",
+      "floor": 2,
+      "bounds": {
+        "x": [
+          7.1,
+          9.8
+        ],
+        "y": [
+          6.5,
+          10.7
+        ]
+      },
+      "center": [
+        8.45,
+        8.6,
+        5.45
+      ],
+      "cameraTarget": [
+        8.45,
+        8.6,
+        5.45
+      ],
+      "material": "#A4A2B7"
+    }
+  ]
+}
