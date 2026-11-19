@@ -1,5 +1,6 @@
 "use client";
 
+import type { StudioModelView } from "../types/rooms";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useState, type ReactNode } from "react";
 
@@ -27,10 +28,14 @@ class PreviewErrorBoundary extends Component<
   }
 }
 
-export function StudioPreview() {
-  const [status, setStatus] = useState<
+export function StudioPreview({
+  requested,
+  ...view
+}: StudioModelView & { requested: boolean }) {
+  const [loadStatus, setStatus] = useState<
     "idle" | "loading" | "ready" | "unavailable"
   >("idle");
+  const status = loadStatus === "idle" && requested ? "loading" : loadStatus;
   const markReady = useCallback(() => setStatus("ready"), []);
   const markUnavailable = useCallback(() => setStatus("unavailable"), []);
   const showCanvas = status === "loading" || status === "ready";
@@ -51,6 +56,7 @@ export function StudioPreview() {
           <div className="absolute inset-0" aria-hidden="true">
             <PreviewErrorBoundary onError={markUnavailable}>
               <StudioModelCanvas
+                {...view}
                 onReady={markReady}
                 onUnavailable={markUnavailable}
               />

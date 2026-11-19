@@ -1,17 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { sectionIds } from "@/config/navigation";
+import { StudioPreview } from "./studio-preview";
 import { RoomIndex } from "@/features/room-experience/room-index";
 import { floors, type StudioRoom, type StudioSelection } from "../types/rooms";
 
-export function StudioExploration({
-  rooms,
-  children,
-}: {
-  rooms: StudioRoom[];
-  children: ReactNode;
-}) {
+export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
+  const [previewRequested, setPreviewRequested] = useState(false);
   const [selection, setSelection] = useState<StudioSelection>({
     kind: "building",
   });
@@ -21,6 +17,11 @@ export function StudioExploration({
       : undefined;
   const activeFloor =
     selection.kind === "floor" ? selection.floor : activeRoom?.floor;
+
+  function selectRoom(room: StudioRoom) {
+    setPreviewRequested(true);
+    setSelection({ kind: "room", roomId: room.id });
+  }
 
   return (
     <>
@@ -38,7 +39,6 @@ export function StudioExploration({
         <p className="mt-3 text-muted">
           A conceptual model of the two-floor studio.
         </p>
-        {children}
         <fieldset className="mt-6">
           <legend className="mb-3 text-muted">Explore the studio</legend>
           <div className="flex flex-wrap gap-3">
@@ -47,7 +47,10 @@ export function StudioExploration({
                 key={floor}
                 type="button"
                 aria-pressed={activeFloor === floor}
-                onClick={() => setSelection({ kind: "floor", floor })}
+                onClick={() => {
+                  setPreviewRequested(true);
+                  setSelection({ kind: "floor", floor });
+                }}
                 className="min-h-11 border border-paper/40 px-4 hover:border-amber aria-pressed:bg-amber aria-pressed:text-ink"
               >
                 Floor {floor}
@@ -76,12 +79,19 @@ export function StudioExploration({
               (activeFloor ? `Floor ${activeFloor}` : "Building overview")}
           </p>
         </fieldset>
+        <StudioPreview
+          requested={previewRequested}
+          rooms={rooms}
+          activeFloor={activeFloor}
+          activeRoom={activeRoom}
+          onSelect={selectRoom}
+        />
       </section>
       <RoomIndex
         rooms={rooms}
         activeFloor={activeFloor}
         activeRoom={activeRoom}
-        onSelect={(room) => setSelection({ kind: "room", roomId: room.id })}
+        onSelect={selectRoom}
       />
     </>
   );

@@ -43,6 +43,14 @@ export function RoomIndex({
               </p>
             )}
           </div>
+          {activeRoom && (
+            <a
+              href={`#${sectionIds.studio}`}
+              className="mt-2 inline-flex min-h-11 items-center text-oxblood underline underline-offset-4"
+            >
+              View in 3D
+            </a>
+          )}
         </div>
         <div className="grid items-start gap-6 sm:grid-cols-2">
           {floors.map((floor) => (

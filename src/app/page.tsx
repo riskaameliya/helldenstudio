@@ -1,7 +1,7 @@
 import { BookingSection } from "@/features/booking/booking-section";
 import { EditorialGallery } from "@/features/gallery/editorial-gallery";
 import { Hero } from "@/features/hero/hero";
-import { StudioExploration, StudioPreview } from "@/features/studio-anatomy";
+import { StudioExploration } from "@/features/studio-anatomy";
 import { readStudioRooms } from "@/features/studio-anatomy/lib/room-data";
 import roomConfig from "../../public/hellden-studio-assets-v1/room-config.json";
 
@@ -22,9 +22,7 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <StudioExploration rooms={rooms}>
-        <StudioPreview />
-      </StudioExploration>
+      <StudioExploration rooms={rooms} />
       <EditorialGallery />
       <BookingSection />
     </main>

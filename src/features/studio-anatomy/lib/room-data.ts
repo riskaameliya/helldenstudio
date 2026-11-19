@@ -1,5 +1,5 @@
 import { roomNames, type RoomId } from "@/config/rooms";
-import type { StudioRoom } from "../types/rooms";
+import type { ModelPoint, StudioRoom } from "../types/rooms";
 
 type SourceRoom = {
   id: string;
@@ -15,6 +15,10 @@ function isRoomId(id: string): id is RoomId {
 
 function isFiniteTuple(values: number[], length: number) {
   return values.length === length && values.every(Number.isFinite);
+}
+
+function isModelPoint(values: number[]): values is ModelPoint {
+  return isFiniteTuple(values, 3);
 }
 
 function isOrderedRange(values: number[]) {
@@ -45,13 +49,13 @@ export function readStudioRooms(source: {
     if (
       !isOrderedRange(bounds.x) ||
       !isOrderedRange(bounds.y) ||
-      !isFiniteTuple(center, 3) ||
-      !isFiniteTuple(cameraTarget, 3)
+      !isModelPoint(center) ||
+      !isModelPoint(cameraTarget)
     ) {
       throw new Error(`Invalid model coordinates for ${id}`);
     }
 
     seen.add(id);
-    return { id, floor, name: roomNames[id] };
+    return { id, floor, name: roomNames[id], cameraTarget };
   });
 }

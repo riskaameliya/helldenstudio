@@ -7,7 +7,7 @@ This is an **editable concept-stage GLB scene**, not a survey-accurate reconstru
 - Floor 2: front = self photo portrait; left = operator/cashier; right = DIY self photo.
 
 ## Contents
-- `hellden-building-blockout.glb`: named geometry nodes, colored room floors, walls and stylized furniture. Import into Blender or load in Three.js / React Three Fiber.
+- [`hellden-building-blockout.glb`](../models/hellden-building-blockout.glb): named geometry nodes, colored room floors, walls and stylized furniture. Import into Blender or load in Three.js / React Three Fiber.
 - `room-config.json`: room bounds and camera targets for click hotspots and scroll choreography.
 - `asset-inventory.json`: node names for later editing.
 - `build.py`: procedural generator.
