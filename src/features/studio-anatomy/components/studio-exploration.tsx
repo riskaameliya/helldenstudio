@@ -7,7 +7,7 @@ import { RoomIndex } from "@/features/room-experience/room-index";
 import { floors, type StudioRoom, type StudioSelection } from "../types/rooms";
 
 export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
-  const [previewRequested, setPreviewRequested] = useState(false);
+  const [manual, setManual] = useState(false);
   const [selection, setSelection] = useState<StudioSelection>({
     kind: "building",
   });
@@ -19,7 +19,7 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
     selection.kind === "floor" ? selection.floor : activeRoom?.floor;
 
   function selectRoom(room: StudioRoom) {
-    setPreviewRequested(true);
+    setManual(true);
     setSelection({ kind: "room", roomId: room.id });
   }
 
@@ -48,7 +48,7 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
                 type="button"
                 aria-pressed={activeFloor === floor}
                 onClick={() => {
-                  setPreviewRequested(true);
+                  setManual(true);
                   setSelection({ kind: "floor", floor });
                 }}
                 className="min-h-11 border border-paper/40 px-4 hover:border-amber aria-pressed:bg-amber aria-pressed:text-ink"
@@ -58,7 +58,10 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
             ))}
             <button
               type="button"
-              onClick={() => setSelection({ kind: "building" })}
+              onClick={() => {
+                setManual(true);
+                setSelection({ kind: "building" });
+              }}
               className="min-h-11 border border-paper/40 px-4 hover:border-amber"
             >
               Back to building
@@ -80,7 +83,7 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
           </p>
         </fieldset>
         <StudioPreview
-          requested={previewRequested}
+          manual={manual}
           rooms={rooms}
           activeFloor={activeFloor}
           activeRoom={activeRoom}

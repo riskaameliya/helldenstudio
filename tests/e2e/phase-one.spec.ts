@@ -30,6 +30,7 @@ test("mobile hero navigates without overflow and respects reduced motion", async
 });
 
 test("Chromium loads the supplied GLB on demand", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const requests: number[] = [];
   page.on("response", (response) => {
@@ -47,6 +48,7 @@ test("Chromium loads the supplied GLB on demand", async ({ page }) => {
 test("a failed model request leaves the preview description available", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   let modelRequested = false;
   await page.route(`**${studioModelPath}`, (route) => {
     modelRequested = true;

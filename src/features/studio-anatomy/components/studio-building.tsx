@@ -24,6 +24,7 @@ function highlightRoom(mesh: Mesh) {
 }
 
 export function StudioBuilding({
+  manual,
   rooms,
   activeFloor,
   activeRoom,
@@ -102,7 +103,12 @@ export function StudioBuilding({
           }
         }}
       />
-      <StudioCamera bounds={bounds} target={target} overview={!activeFloor} />
+      <StudioCamera
+        bounds={bounds}
+        target={target}
+        overview={!activeFloor}
+        manual={manual}
+      />
     </>
   );
 }

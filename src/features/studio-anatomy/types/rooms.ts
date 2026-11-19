@@ -18,6 +18,7 @@ export type StudioSelection =
   | { kind: "room"; roomId: RoomId };
 
 export type StudioModelView = {
+  manual: boolean;
   rooms: StudioRoom[];
   activeFloor?: FloorId;
   activeRoom?: StudioRoom;

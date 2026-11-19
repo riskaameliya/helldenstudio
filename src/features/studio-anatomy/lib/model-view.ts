@@ -1,9 +1,15 @@
 import { Box3, Matrix4, Quaternion, Vector3, type Object3D } from "three";
 import type { FloorId, ModelPoint } from "../types/rooms";
 
+const arrivalOffset = new Vector3(2, 4, 26);
 const overviewOffset = new Vector3(13, 10, 22);
 const interiorOffset = new Vector3(9, 22, 16);
 const framingMargin = 1.22;
+const cameraOffsets = {
+  arrival: arrivalOffset,
+  building: overviewOffset,
+  interior: interiorOffset,
+};
 
 export function toScenePoint([x, depth, height]: ModelPoint) {
   return new Vector3(x, height, -depth);
@@ -24,11 +30,9 @@ export function frameModel(
   target: Vector3,
   width: number,
   height: number,
-  overview: boolean,
+  view: keyof typeof cameraOffsets,
 ) {
-  const position = target
-    .clone()
-    .add(overview ? overviewOffset : interiorOffset);
+  const position = target.clone().add(cameraOffsets[view]);
   const rotation = new Quaternion().setFromRotationMatrix(
     new Matrix4().lookAt(position, target, new Vector3(0, 1, 0)),
   );
