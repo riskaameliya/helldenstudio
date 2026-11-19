@@ -408,6 +408,13 @@
   opacity: 1;
 }
 
+.galleryChapter[data-gallery-visible]
+  .photoStack
+  li[data-photo-position="hidden"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .galleryChapter[data-gallery-visible] .photoHint {
   display: block;
   margin-block-start: 0.55rem;

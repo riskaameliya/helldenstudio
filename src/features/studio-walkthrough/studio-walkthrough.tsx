@@ -35,7 +35,7 @@ const sessions = new Map<
   ["express_l1", { title: "Hellden Express", price: 40 }],
   [
     "self_photo_portrait_l2",
-    { title: "Self Photo Pass", price: 40, passportAddOn: 15 },
+    { title: "Self Photo Passport", price: 40, passportAddOn: 15 },
   ],
 ]);
 
@@ -141,7 +141,13 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
             midpoint;
           item.style.setProperty("--photo-offset", String(position));
           item.dataset.photoPosition =
-            position === 0 ? "active" : position < 0 ? "above" : "below";
+            Math.abs(position) > 1
+              ? "hidden"
+              : position === 0
+                ? "active"
+                : position < 0
+                  ? "above"
+                  : "below";
           const link = item.querySelector("a");
           if (link) link.tabIndex = position === 0 ? 0 : -1;
         });

@@ -126,20 +126,47 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   await page.getByRole("link", { name: "Continue upstairs" }).click();
   await expect(page).toHaveURL(/#tour-diy_self_photo_l2$/);
   const diy = page.locator("#tour-diy_self_photo_l2");
-  await expect(diy.getByRole("heading")).toBeInViewport();
+  await expect(
+    diy.getByRole("heading", { name: "DIY Self Photo Passport" }),
+  ).toBeInViewport();
+  const passportGallery = diy.getByRole("complementary", {
+    name: "DIY Self Photo Passport gallery",
+  });
+  await expect(passportGallery).toBeVisible();
+  await expect(passportGallery.getByRole("img")).toHaveCount(4);
+  const parkedPhoto = passportGallery.locator('[data-photo-position="hidden"]');
+  await expect(parkedPhoto).toHaveCount(1);
+  await expect(parkedPhoto).toHaveCSS("opacity", "0");
+
+  await expect
+    .poll(() =>
+      passportGallery
+        .getByRole("img")
+        .evaluateAll((photos) =>
+          photos.every(
+            (photo) =>
+              photo instanceof HTMLImageElement &&
+              photo.complete &&
+              photo.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
   await expect(diy.getByText("Floor 2", { exact: true })).toBeInViewport();
   await expect.poll(async () => (await stageShot()).equals(stairs)).toBe(false);
 
   await menu.click();
-  await nav.getByRole("link", { name: "Self Photo Pass" }).click();
+  await nav
+    .getByRole("link", { name: "Self Photo Passport", exact: true })
+    .click();
   const portrait = page.locator("#tour-self_photo_portrait_l2");
   await expect(
-    portrait.getByRole("heading", { name: "Self Photo Pass" }),
+    portrait.getByRole("heading", { name: "Self Photo Passport" }),
   ).toBeInViewport();
   await expect(portrait.getByText("40k/session")).toBeVisible();
   await expect(portrait.getByText("+15k for DIY passport")).toBeVisible();
   const gallery = portrait.getByRole("complementary", {
-    name: "Self Photo Pass gallery",
+    name: "Self Photo Passport gallery",
   });
   await expect(gallery).toBeVisible();
   await expect(gallery.getByRole("img")).toHaveCount(3);

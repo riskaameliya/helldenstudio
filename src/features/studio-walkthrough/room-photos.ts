@@ -114,10 +114,32 @@ const selfPhotoPassPhotos = [
   },
 ];
 
+const diyPassportPhotos = [
+  {
+    src: "/images/diy-passport/diy-pass-1.jpeg",
+    alt: "Open DIY passport with a portrait and stamps beside craft supplies",
+    width: 778,
+    height: 1210,
+  },
+  {
+    src: "/images/diy-passport/diy-pass-2.jpeg",
+    alt: "Decorated DIY passport with a portrait, stickers, and colorful stamps",
+    width: 748,
+    height: 1214,
+  },
+  {
+    src: "/images/diy-passport/diy-pass-3.jpeg",
+    alt: "Self-photo passport on a work surface with stamping supplies",
+    width: 802,
+    height: 1226,
+  },
+];
+
 export const roomPhotos: Partial<Record<RoomId, RoomPhoto[]>> = {
   portrait_l1: portraitPhotos,
   cinema_l1: cinemaPhotos,
   record_l1: recordPhotos,
   express_l1: expressPhotos,
   self_photo_portrait_l2: selfPhotoPassPhotos,
+  diy_self_photo_l2: diyPassportPhotos,
 };

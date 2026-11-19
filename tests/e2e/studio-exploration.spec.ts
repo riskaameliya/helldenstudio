@@ -12,7 +12,7 @@ test("room and floor controls share selection and reset to the building", async 
   await expect(selection).toHaveText("Building overview");
   await rooms.selectOption("diy_self_photo_l2");
   await expect(floor).toHaveAttribute("aria-pressed", "true");
-  await expect(selection).toHaveText("DIY Self Photo · Floor 2");
+  await expect(selection).toHaveText("DIY Self Photo Passport · Floor 2");
   await floor.click();
   await expect(rooms).toHaveValue("");
   await expect(selection).toHaveText("Floor 2");
