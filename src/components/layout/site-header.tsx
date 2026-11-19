@@ -11,7 +11,7 @@ export function SiteHeader() {
       >
         Skip to content
       </a>
-      <div className="site-gutter mx-auto flex max-w-screen-2xl items-center justify-between gap-4 py-3">
+      <div className="site-gutter mx-auto flex max-w-screen-2xl flex-wrap items-start justify-between gap-x-6 sm:items-center py-3">
         <Link
           className="flex min-h-11 items-center font-display text-2xl font-bold uppercase"
           href="/"
@@ -19,7 +19,7 @@ export function SiteHeader() {
           {site.name}
         </Link>
         <nav aria-label="Main navigation">
-          <ul>
+          <ul className="flex flex-wrap gap-x-4 sm:gap-x-8">
             {navigation.map(({ label, href }) => (
               <li key={href}>
                 <a

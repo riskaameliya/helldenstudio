@@ -1,4 +1,4 @@
-import { studioPreviewId } from "@/config/navigation";
+import { sectionIds } from "@/config/navigation";
 import styles from "./hero.module.css";
 
 export function Hero() {
@@ -12,7 +12,7 @@ export function Hero() {
           <span>Enter the</span> <span>Hellden</span> <span>Universe</span>
         </h1>
         <a
-          href={`#${studioPreviewId}`}
+          href={`#${sectionIds.studio}`}
           className="mt-8 inline-flex min-h-11 items-center gap-5 border-b border-amber py-2 text-amber hover:text-paper"
         >
           Explore the studio <span aria-hidden="true">↓</span>
