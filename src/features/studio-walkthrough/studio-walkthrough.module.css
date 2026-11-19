@@ -309,6 +309,148 @@
   background: #1c1512ed;
 }
 
+.portraitChapter[data-gallery-visible] {
+  min-height: calc(var(--chapter-height) + var(--photo-count) * 66svh);
+}
+
+.portraitLayout {
+  gap: clamp(1rem, 3vw, 3rem);
+}
+
+.portraitChapter[data-gallery-visible] .portraitLayout {
+  position: sticky;
+  top: 0;
+}
+
+.portraitPanel {
+  align-self: center;
+  margin-inline-start: auto;
+  width: min(100%, 29rem);
+  padding-inline: 0.5rem;
+  pointer-events: auto;
+}
+
+.portraitChapter[data-gallery-visible="false"]
+  .portraitPanel:not(:focus-within) {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(0.85rem);
+  pointer-events: none;
+}
+
+.photoStack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.photoHint {
+  display: none;
+}
+
+.portraitChapter[data-gallery-visible] .photoStack {
+  --photo-height: clamp(13rem, 54svh, 32rem);
+  position: relative;
+  display: block;
+  height: calc(var(--photo-height) * 1.36);
+  perspective: 50rem;
+}
+
+.portraitChapter[data-gallery-visible] .photoStack li {
+  position: absolute;
+  inset: 50% 0 auto;
+  width: min(88%, calc(var(--photo-height) * 0.75));
+  margin-inline: auto;
+  z-index: 1;
+  transform: translateY(
+      calc(-50% + var(--photo-offset) * var(--photo-height) * 0.31)
+    )
+    scale(0.84);
+  opacity: 0.55;
+}
+
+.portraitChapter[data-gallery-visible] .photoStack a {
+  box-shadow: 0 0.7rem 1.65rem #0a0708bd;
+}
+
+.portraitChapter[data-gallery-visible] .photoStack img {
+  height: var(--photo-height);
+}
+
+.portraitChapter[data-gallery-visible]
+  .photoStack
+  li[data-photo-position="above"] {
+  transform: translateY(
+      calc(-50% + var(--photo-offset) * var(--photo-height) * 0.31)
+    )
+    rotateX(37deg) scale(0.88);
+}
+
+.portraitChapter[data-gallery-visible]
+  .photoStack
+  li[data-photo-position="below"] {
+  transform: translateY(
+      calc(-50% + var(--photo-offset) * var(--photo-height) * 0.31)
+    )
+    rotateX(-37deg) scale(0.88);
+}
+
+.portraitChapter[data-gallery-visible]
+  .photoStack
+  li[data-photo-position="active"] {
+  z-index: 2;
+  transform: translateY(-50%);
+  opacity: 1;
+}
+
+.portraitChapter[data-gallery-visible] .photoHint {
+  display: block;
+  margin-block-start: 0.55rem;
+  color: var(--color-paper);
+  font-size: 0.8rem;
+  text-align: center;
+  text-shadow: 0 1px 4px #000;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .portraitPanel {
+    transition:
+      opacity 300ms ease,
+      transform 300ms ease,
+      visibility 300ms;
+  }
+
+  .photoStack li {
+    transition:
+      transform 500ms cubic-bezier(0.2, 0.75, 0.25, 1),
+      opacity 400ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portraitChapter[data-gallery-visible="false"] .portraitPanel {
+    transform: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .portraitLayout {
+    flex-direction: column;
+    align-items: start;
+    justify-content: end;
+    padding-block-start: 4rem;
+  }
+
+  .portraitPanel {
+    align-self: auto;
+    margin-inline-start: 0;
+  }
+
+  .portraitChapter[data-gallery-visible] .photoStack {
+    --photo-height: clamp(7rem, 25svh, 14rem);
+  }
+}
+
 .primary,
 .textLink {
   display: inline-flex;

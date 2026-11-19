@@ -7,10 +7,16 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type CSSProperties,
 } from "react";
 import { sectionIds } from "@/config/navigation";
 import { floors } from "@/features/studio-anatomy/types/rooms";
 import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-error-boundary";
+import {
+  portraitPhotoCount,
+  PortraitGallery,
+  PortraitSession,
+} from "./portrait-session";
 import { entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
 import styles from "./studio-walkthrough.module.css";
@@ -53,7 +59,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
       }
     }
 
-    if (window.location.hash.startsWith("#tour-")) loadOnTourScroll();
+    loadOnTourScroll();
     window.addEventListener("scroll", loadOnTourScroll, { passive: true });
     return () => window.removeEventListener("scroll", loadOnTourScroll);
   }, [requestScene, status]);
@@ -86,6 +92,58 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
       window.removeEventListener("scroll", scheduleSync);
       window.removeEventListener("resize", scheduleSync);
       cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
+    const chapter =
+      tour.current?.querySelector<HTMLElement>("#tour-portrait_l1");
+    const layout = chapter?.querySelector<HTMLElement>(
+      "[data-portrait-layout]",
+    );
+    const photos = chapter?.querySelectorAll<HTMLElement>(
+      "[data-portrait-photo]",
+    );
+    if (!chapter || !layout || !photos?.length) return;
+
+    const updateGallery = () => {
+      const travelled = -chapter.getBoundingClientRect().top;
+      const hold = chapter.offsetHeight - layout.offsetHeight;
+      const visible =
+        travelled >= -layout.offsetHeight * 0.1 && travelled <= hold;
+      chapter.dataset.galleryVisible = String(visible);
+
+      const step = Math.min(
+        photos.length - 1,
+        Math.max(0, Math.floor(travelled / (hold / photos.length || 1))),
+      );
+      const photo = (step + 1) % photos.length;
+      const midpoint = Math.floor(photos.length / 2);
+      photos.forEach((item, index) => {
+        const position =
+          ((index - photo + midpoint + photos.length) % photos.length) -
+          midpoint;
+        item.style.setProperty("--photo-offset", String(position));
+        item.dataset.photoPosition =
+          position === 0 ? "active" : position < 0 ? "above" : "below";
+        const link = item.querySelector("a");
+        if (link) link.tabIndex = position === 0 ? 0 : -1;
+      });
+    };
+
+    chapter.dataset.galleryVisible = "false";
+    updateGallery();
+    window.addEventListener("scroll", updateGallery, { passive: true });
+    window.addEventListener("resize", updateGallery);
+    return () => {
+      window.removeEventListener("scroll", updateGallery);
+      window.removeEventListener("resize", updateGallery);
+      delete chapter.dataset.galleryVisible;
+      photos.forEach((item) => {
+        item.style.removeProperty("--photo-offset");
+        delete item.dataset.photoPosition;
+        item.querySelector("a")?.removeAttribute("tabindex");
+      });
     };
   }, []);
 
@@ -160,6 +218,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
 
       <div className={styles.chapters}>
         <article
+          data-tour-chapter
           id={entranceId}
           ref={entranceChapter}
           className={`${styles.chapter} ${styles.entranceChapter}`}
@@ -191,17 +250,13 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           </div>
         </article>
 
-        {stops.map((room, index) => (
-          <article
-            key={room.id}
-            id={tourChapterId(room.id)}
-            className={styles.chapter}
-            data-last-stop={index === stops.length - 1 || undefined}
-            tabIndex={-1}
-          >
+        {stops.map((room, index) => {
+          const isPortrait = room.id === "portrait_l1";
+          const roomCard = (
             <div className={styles.roomCard}>
               <p className="mb-2 text-sm text-amber">Floor {room.floor}</p>
               <h2 className={styles.roomTitle}>{room.name}</h2>
+              {room.id === "portrait_l1" && <PortraitSession />}
               <details className="mt-4">
                 <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
                   Look around
@@ -229,8 +284,40 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
                 </a>
               )}
             </div>
-          </article>
-        ))}
+          );
+          return (
+            <article
+              key={room.id}
+              id={tourChapterId(room.id)}
+              className={isPortrait ? styles.portraitChapter : styles.chapter}
+              style={
+                isPortrait
+                  ? ({ "--photo-count": portraitPhotoCount } as CSSProperties)
+                  : undefined
+              }
+              data-tour-chapter
+              data-last-stop={index === stops.length - 1 || undefined}
+              tabIndex={-1}
+            >
+              {isPortrait ? (
+                <div
+                  className={`${styles.chapter} ${styles.portraitLayout}`}
+                  data-portrait-layout
+                >
+                  {roomCard}
+                  <aside
+                    aria-label="Hellden Portrait gallery"
+                    className={styles.portraitPanel}
+                  >
+                    <PortraitGallery />
+                  </aside>
+                </div>
+              ) : (
+                roomCard
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

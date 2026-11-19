@@ -141,3 +141,104 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
     portrait.getByText(/backdrop, camera, and studio lights/),
   ).toBeVisible();
 });
+
+test("Hellden Portrait displays its price, inclusions, and three supplied photos", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 820 });
+  await page.goto("/#tour-portrait_l1");
+  const portrait = page.locator("#tour-portrait_l1");
+  const panel = portrait.getByRole("complementary", {
+    name: "Hellden Portrait gallery",
+  });
+  const titleCard = portrait
+    .getByRole("heading", { name: "Hellden Portrait" })
+    .locator("..");
+  await expect(titleCard.getByText("35k/session")).toBeVisible();
+  await expect(panel.getByText("35k/session")).toHaveCount(0);
+  await expect(
+    portrait
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(portrait.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const gallery = portrait.getByRole("list", {
+    name: "Hellden Portrait examples",
+  });
+  await gallery.scrollIntoViewIfNeeded();
+  await expect(gallery.getByRole("img")).toHaveCount(3);
+  await expect
+    .poll(() =>
+      gallery
+        .getByRole("img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+  const mobileCard = await titleCard.boundingBox();
+  const mobilePanel = await panel.boundingBox();
+  expect(mobilePanel?.y ?? 0).toBeGreaterThan(
+    (mobileCard?.y ?? 0) + (mobileCard?.height ?? 0),
+  );
+
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await expect(panel).toBeVisible();
+  const desktopCard = await titleCard.boundingBox();
+  const desktopPanel = await panel.boundingBox();
+  expect(desktopPanel?.x ?? 0).toBeGreaterThan(
+    (desktopCard?.x ?? 0) + (desktopCard?.width ?? 0),
+  );
+});
+
+test("scroll advances each stacked photo before leaving Portrait", async ({
+  page,
+}) => {
+  await page.goto("/#tour-portrait_l1");
+  const portrait = page.locator("#tour-portrait_l1");
+  const panel = portrait.getByRole("complementary", {
+    name: "Hellden Portrait gallery",
+    includeHidden: true,
+  });
+  const photos = panel.locator("[data-portrait-photo]");
+  const jumpTo = (fraction: number) =>
+    portrait.evaluate((chapter, position) => {
+      const layout = chapter.querySelector<HTMLElement>(
+        "[data-portrait-layout]",
+      )!;
+      const hold = (chapter as HTMLElement).offsetHeight - layout.offsetHeight;
+      window.scrollBy(0, chapter.getBoundingClientRect().top + hold * position);
+    }, fraction);
+  await expect(photos.nth(1)).toHaveAttribute("data-photo-position", "active");
+  await expect(photos.nth(0)).toHaveAttribute("data-photo-position", "above");
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "below");
+  const frame = await photos.nth(1).getByRole("img").boundingBox();
+  expect(frame).not.toBeNull();
+  expect(frame!.width / frame!.height).toBeCloseTo(0.75, 1);
+  expect(frame!.height).toBeGreaterThanOrEqual(
+    0.5 * (page.viewportSize()?.height ?? 0),
+  );
+  await expect(panel).toHaveCSS("opacity", "1");
+  await jumpTo(0.5);
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(
+    portrait.getByRole("heading", { name: "Hellden Portrait" }),
+  ).toBeInViewport();
+  await jumpTo(0.85);
+  await expect(photos.nth(0)).toHaveAttribute("data-photo-position", "active");
+  await jumpTo(1.1);
+  await expect(panel).toBeHidden();
+  await jumpTo(0.5);
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(panel).toBeVisible();
+});
