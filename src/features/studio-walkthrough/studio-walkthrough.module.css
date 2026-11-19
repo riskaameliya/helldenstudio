@@ -320,7 +320,11 @@
 }
 
 .galleryLayout {
+  display: grid;
+  grid-template-columns: min(38%, 26rem) minmax(0, 1fr);
+  align-items: center;
   gap: clamp(1rem, 3vw, 3rem);
+  padding-block: clamp(3.5rem, 8svh, 4.5rem);
 }
 
 .galleryChapter[data-gallery-visible] .galleryLayout {
@@ -329,8 +333,8 @@
 }
 
 .galleryPanel {
-  align-self: center;
-  margin-inline-start: auto;
+  position: relative;
+  justify-self: center;
   width: min(100%, 29rem);
   padding-inline: 0.5rem;
   pointer-events: auto;
@@ -357,7 +361,7 @@
   --photo-height: clamp(13rem, 54svh, 32rem);
   position: relative;
   display: block;
-  height: calc(var(--photo-height) * 1.36);
+  height: calc(var(--photo-height) * 1.24);
   perspective: 50rem;
 }
 
@@ -416,8 +420,9 @@
 }
 
 .galleryChapter[data-gallery-visible] .photoHint {
+  position: absolute;
+  inset: calc(100% + 0.55rem) 0 auto;
   display: block;
-  margin-block-start: 0.55rem;
   color: var(--color-paper);
   font-size: 0.8rem;
   text-align: center;
@@ -447,15 +452,10 @@
 
 @media (max-width: 48rem) {
   .galleryLayout {
-    flex-direction: column;
-    align-items: start;
-    justify-content: end;
-    padding-block-start: 4rem;
-  }
-
-  .galleryPanel {
-    align-self: auto;
-    margin-inline-start: 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    justify-items: center;
+    padding-block: 4rem 2.5rem;
   }
 
   .galleryChapter[data-gallery-visible] .photoStack {
