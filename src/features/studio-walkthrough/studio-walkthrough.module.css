@@ -309,20 +309,20 @@
   background: #1c1512ed;
 }
 
-.portraitChapter[data-gallery-visible] {
+.galleryChapter[data-gallery-visible] {
   min-height: calc(var(--chapter-height) + var(--photo-count) * 66svh);
 }
 
-.portraitLayout {
+.galleryLayout {
   gap: clamp(1rem, 3vw, 3rem);
 }
 
-.portraitChapter[data-gallery-visible] .portraitLayout {
+.galleryChapter[data-gallery-visible] .galleryLayout {
   position: sticky;
   top: 0;
 }
 
-.portraitPanel {
+.galleryPanel {
   align-self: center;
   margin-inline-start: auto;
   width: min(100%, 29rem);
@@ -330,8 +330,7 @@
   pointer-events: auto;
 }
 
-.portraitChapter[data-gallery-visible="false"]
-  .portraitPanel:not(:focus-within) {
+.galleryChapter[data-gallery-visible="false"] .galleryPanel:not(:focus-within) {
   visibility: hidden;
   opacity: 0;
   transform: translateY(0.85rem);
@@ -348,7 +347,7 @@
   display: none;
 }
 
-.portraitChapter[data-gallery-visible] .photoStack {
+.galleryChapter[data-gallery-visible] .photoStack {
   --photo-height: clamp(13rem, 54svh, 32rem);
   position: relative;
   display: block;
@@ -356,7 +355,7 @@
   perspective: 50rem;
 }
 
-.portraitChapter[data-gallery-visible] .photoStack li {
+.galleryChapter[data-gallery-visible] .photoStack li {
   position: absolute;
   inset: 50% 0 auto;
   width: min(88%, calc(var(--photo-height) * 0.75));
@@ -369,15 +368,15 @@
   opacity: 0.55;
 }
 
-.portraitChapter[data-gallery-visible] .photoStack a {
+.galleryChapter[data-gallery-visible] .photoStack a {
   box-shadow: 0 0.7rem 1.65rem #0a0708bd;
 }
 
-.portraitChapter[data-gallery-visible] .photoStack img {
+.galleryChapter[data-gallery-visible] .photoStack img {
   height: var(--photo-height);
 }
 
-.portraitChapter[data-gallery-visible]
+.galleryChapter[data-gallery-visible]
   .photoStack
   li[data-photo-position="above"] {
   transform: translateY(
@@ -386,7 +385,7 @@
     rotateX(37deg) scale(0.88);
 }
 
-.portraitChapter[data-gallery-visible]
+.galleryChapter[data-gallery-visible]
   .photoStack
   li[data-photo-position="below"] {
   transform: translateY(
@@ -395,7 +394,7 @@
     rotateX(-37deg) scale(0.88);
 }
 
-.portraitChapter[data-gallery-visible]
+.galleryChapter[data-gallery-visible]
   .photoStack
   li[data-photo-position="active"] {
   z-index: 2;
@@ -403,7 +402,7 @@
   opacity: 1;
 }
 
-.portraitChapter[data-gallery-visible] .photoHint {
+.galleryChapter[data-gallery-visible] .photoHint {
   display: block;
   margin-block-start: 0.55rem;
   color: var(--color-paper);
@@ -413,7 +412,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .portraitPanel {
+  .galleryPanel {
     transition:
       opacity 300ms ease,
       transform 300ms ease,
@@ -428,25 +427,25 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portraitChapter[data-gallery-visible="false"] .portraitPanel {
+  .galleryChapter[data-gallery-visible="false"] .galleryPanel {
     transform: none;
   }
 }
 
 @media (max-width: 48rem) {
-  .portraitLayout {
+  .galleryLayout {
     flex-direction: column;
     align-items: start;
     justify-content: end;
     padding-block-start: 4rem;
   }
 
-  .portraitPanel {
+  .galleryPanel {
     align-self: auto;
     margin-inline-start: 0;
   }
 
-  .portraitChapter[data-gallery-visible] .photoStack {
+  .galleryChapter[data-gallery-visible] .photoStack {
     --photo-height: clamp(7rem, 25svh, 14rem);
   }
 }

@@ -12,11 +12,9 @@ import {
 import { sectionIds } from "@/config/navigation";
 import { floors } from "@/features/studio-anatomy/types/rooms";
 import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-error-boundary";
-import {
-  portraitPhotoCount,
-  PortraitGallery,
-  PortraitSession,
-} from "./portrait-session";
+import { RoomSession } from "./room-session";
+import { roomPhotos } from "./room-photos";
+import { RoomPhotoStack } from "./room-photo-stack";
 import { entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
 import styles from "./studio-walkthrough.module.css";
@@ -26,6 +24,11 @@ const WalkthroughCanvas = dynamic(() => import("./walkthrough-canvas"), {
 });
 
 const entranceId = "tour-entrance";
+
+const sessionPrices = new Map([
+  ["portrait_l1", 35],
+  ["cinema_l1", 40],
+]);
 
 function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {
   event.currentTarget.closest("details")?.removeAttribute("open");
@@ -96,54 +99,62 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   }, []);
 
   useEffect(() => {
-    const chapter =
-      tour.current?.querySelector<HTMLElement>("#tour-portrait_l1");
-    const layout = chapter?.querySelector<HTMLElement>(
-      "[data-portrait-layout]",
-    );
-    const photos = chapter?.querySelectorAll<HTMLElement>(
-      "[data-portrait-photo]",
-    );
-    if (!chapter || !layout || !photos?.length) return;
-
-    const updateGallery = () => {
-      const travelled = -chapter.getBoundingClientRect().top;
-      const hold = chapter.offsetHeight - layout.offsetHeight;
-      const visible =
-        travelled >= -layout.offsetHeight * 0.1 && travelled <= hold;
-      chapter.dataset.galleryVisible = String(visible);
-
-      const step = Math.min(
-        photos.length - 1,
-        Math.max(0, Math.floor(travelled / (hold / photos.length || 1))),
+    const galleries = Array.from(
+      tour.current?.querySelectorAll<HTMLElement>("[data-gallery-chapter]") ??
+        [],
+    ).flatMap((chapter) => {
+      const layout = chapter.querySelector<HTMLElement>(
+        "[data-gallery-layout]",
       );
-      const photo = (step + 1) % photos.length;
-      const midpoint = Math.floor(photos.length / 2);
-      photos.forEach((item, index) => {
-        const position =
-          ((index - photo + midpoint + photos.length) % photos.length) -
-          midpoint;
-        item.style.setProperty("--photo-offset", String(position));
-        item.dataset.photoPosition =
-          position === 0 ? "active" : position < 0 ? "above" : "below";
-        const link = item.querySelector("a");
-        if (link) link.tabIndex = position === 0 ? 0 : -1;
-      });
+      const photos = Array.from(
+        chapter.querySelectorAll<HTMLElement>("[data-gallery-photo]"),
+      );
+      return layout && photos.length ? [{ chapter, layout, photos }] : [];
+    });
+
+    const updateGalleries = () => {
+      for (const { chapter, layout, photos } of galleries) {
+        const travelled = -chapter.getBoundingClientRect().top;
+        const hold = chapter.offsetHeight - layout.offsetHeight;
+        const visible =
+          travelled >= -layout.offsetHeight * 0.1 && travelled <= hold;
+        chapter.dataset.galleryVisible = String(visible);
+
+        const step = Math.min(
+          photos.length - 1,
+          Math.max(0, Math.floor(travelled / (hold / photos.length || 1))),
+        );
+        const photo = (step + 1) % photos.length;
+        const midpoint = Math.floor(photos.length / 2);
+        photos.forEach((item, index) => {
+          const position =
+            ((index - photo + midpoint + photos.length) % photos.length) -
+            midpoint;
+          item.style.setProperty("--photo-offset", String(position));
+          item.dataset.photoPosition =
+            position === 0 ? "active" : position < 0 ? "above" : "below";
+          const link = item.querySelector("a");
+          if (link) link.tabIndex = position === 0 ? 0 : -1;
+        });
+      }
     };
 
-    chapter.dataset.galleryVisible = "false";
-    updateGallery();
-    window.addEventListener("scroll", updateGallery, { passive: true });
-    window.addEventListener("resize", updateGallery);
+    for (const { chapter } of galleries)
+      chapter.dataset.galleryVisible = "false";
+    updateGalleries();
+    window.addEventListener("scroll", updateGalleries, { passive: true });
+    window.addEventListener("resize", updateGalleries);
     return () => {
-      window.removeEventListener("scroll", updateGallery);
-      window.removeEventListener("resize", updateGallery);
-      delete chapter.dataset.galleryVisible;
-      photos.forEach((item) => {
-        item.style.removeProperty("--photo-offset");
-        delete item.dataset.photoPosition;
-        item.querySelector("a")?.removeAttribute("tabindex");
-      });
+      window.removeEventListener("scroll", updateGalleries);
+      window.removeEventListener("resize", updateGalleries);
+      for (const { chapter, photos } of galleries) {
+        delete chapter.dataset.galleryVisible;
+        photos.forEach((item) => {
+          item.style.removeProperty("--photo-offset");
+          delete item.dataset.photoPosition;
+          item.querySelector("a")?.removeAttribute("tabindex");
+        });
+      }
     };
   }, []);
 
@@ -251,12 +262,17 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
         </article>
 
         {stops.map((room, index) => {
-          const isPortrait = room.id === "portrait_l1";
+          const photos = roomPhotos[room.id];
+          const sessionPrice = sessionPrices.get(room.id);
           const roomCard = (
             <div className={styles.roomCard}>
               <p className="mb-2 text-sm text-amber">Floor {room.floor}</p>
-              <h2 className={styles.roomTitle}>{room.name}</h2>
-              {room.id === "portrait_l1" && <PortraitSession />}
+              <h2 className={styles.roomTitle}>
+                {room.id === "cinema_l1" ? "Hellden Cinema" : room.name}
+              </h2>
+              {sessionPrice !== undefined && (
+                <RoomSession price={sessionPrice} />
+              )}
               <details className="mt-4">
                 <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
                   Look around
@@ -289,27 +305,28 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
             <article
               key={room.id}
               id={tourChapterId(room.id)}
-              className={isPortrait ? styles.portraitChapter : styles.chapter}
+              className={photos ? styles.galleryChapter : styles.chapter}
               style={
-                isPortrait
-                  ? ({ "--photo-count": portraitPhotoCount } as CSSProperties)
+                photos
+                  ? ({ "--photo-count": photos.length } as CSSProperties)
                   : undefined
               }
               data-tour-chapter
+              data-gallery-chapter={photos ? true : undefined}
               data-last-stop={index === stops.length - 1 || undefined}
               tabIndex={-1}
             >
-              {isPortrait ? (
+              {photos ? (
                 <div
-                  className={`${styles.chapter} ${styles.portraitLayout}`}
-                  data-portrait-layout
+                  className={`${styles.chapter} ${styles.galleryLayout}`}
+                  data-gallery-layout
                 >
                   {roomCard}
                   <aside
-                    aria-label="Hellden Portrait gallery"
-                    className={styles.portraitPanel}
+                    aria-label={`${room.name} gallery`}
+                    className={styles.galleryPanel}
                   >
-                    <PortraitGallery />
+                    <RoomPhotoStack photos={photos} roomName={room.name} />
                   </aside>
                 </div>
               ) : (

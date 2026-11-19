@@ -32,7 +32,7 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   await expect(canvas).toBeVisible();
   const cinema = page.locator("#tour-cinema_l1");
   await expect(
-    cinema.getByRole("heading", { name: "Cinema" }),
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
   ).toBeInViewport();
   await expect
     .poll(async () => (await stageShot()).equals(corridor))
@@ -210,11 +210,11 @@ test("scroll advances each stacked photo before leaving Portrait", async ({
     name: "Hellden Portrait gallery",
     includeHidden: true,
   });
-  const photos = panel.locator("[data-portrait-photo]");
+  const photos = panel.locator("[data-gallery-photo]");
   const jumpTo = (fraction: number) =>
     portrait.evaluate((chapter, position) => {
       const layout = chapter.querySelector<HTMLElement>(
-        "[data-portrait-layout]",
+        "[data-gallery-layout]",
       )!;
       const hold = (chapter as HTMLElement).offsetHeight - layout.offsetHeight;
       window.scrollBy(0, chapter.getBoundingClientRect().top + hold * position);
@@ -241,4 +241,40 @@ test("scroll advances each stacked photo before leaving Portrait", async ({
   await jumpTo(0.5);
   await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
   await expect(panel).toBeVisible();
+});
+
+test("Cinema holds the camera and scrolls all three photos", async ({
+  page,
+}) => {
+  await page.goto("/#tour-cinema_l1");
+  const cinema = page.locator("#tour-cinema_l1");
+  await expect(
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
+  ).toBeVisible();
+  await expect(cinema.getByText("40k/session")).toBeVisible();
+  await expect(
+    cinema
+      .getByRole("list", { name: "Session inclusions" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    "No mirror",
+    "2 photo strips",
+    "Unlimited retakes",
+    "All soft files included",
+  ]);
+  await expect(cinema.getByText("Photo, GIF & Live Photo")).toBeVisible();
+  const panel = cinema.getByRole("complementary", { name: "Cinema gallery" });
+  const photos = panel.locator("[data-gallery-photo]");
+  await expect(panel).toBeVisible();
+  await expect(photos).toHaveCount(3);
+  await expect(photos.nth(1)).toHaveAttribute("data-photo-position", "active");
+  await cinema.evaluate((chapter) => {
+    const layout = chapter.querySelector<HTMLElement>("[data-gallery-layout]")!;
+    const hold = (chapter as HTMLElement).offsetHeight - layout.offsetHeight;
+    window.scrollBy(0, chapter.getBoundingClientRect().top + hold * 0.55);
+  });
+  await expect(photos.nth(2)).toHaveAttribute("data-photo-position", "active");
+  await expect(
+    cinema.getByRole("heading", { name: "Hellden Cinema" }),
+  ).toBeInViewport();
 });

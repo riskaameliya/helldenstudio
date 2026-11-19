@@ -76,25 +76,26 @@ function StudioTourScene({
     const chapters = Array.from(
       element.querySelectorAll<HTMLElement>("[data-tour-chapter]"),
     );
-    const portrait = chapters[1];
-    const portraitLayout = portrait.querySelector<HTMLElement>(
-      "[data-portrait-layout]",
-    );
     let starts: number[] = [];
-    let hold = 0;
+    let holds: number[] = [];
     const measure = () => {
       starts = chapters.map(
         (chapter) => chapter.offsetTop - chapters[0].offsetTop,
       );
-      hold = portraitLayout
-        ? Math.max(0, portrait.offsetHeight - portraitLayout.offsetHeight)
-        : 0;
+      holds = chapters.map((chapter) => {
+        const layout = chapter.querySelector<HTMLElement>(
+          "[data-gallery-layout]",
+        );
+        return layout
+          ? Math.max(0, chapter.offsetHeight - layout.offsetHeight)
+          : 0;
+      });
     };
     measure();
     const renderPose = (scroll: number) => {
       const { position, target } = walkthroughPose(
         stops,
-        chapterProgress(scroll, starts, hold),
+        chapterProgress(scroll, starts, holds),
         motion.matches,
       );
       camera.position.copy(toScenePoint(position));
