@@ -19,7 +19,7 @@ const pointerLightingQuery =
   "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
 
 export function StudioLighting({ children }: { children: ReactNode }) {
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const litSurface = useRef<HTMLElement | null>(null);
 
   function resetLight() {

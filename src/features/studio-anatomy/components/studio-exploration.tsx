@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { sectionIds } from "@/config/navigation";
 import { StudioPreview } from "./studio-preview";
-import { RoomIndex } from "@/features/room-experience/room-index";
 import { floors, type StudioRoom, type StudioSelection } from "../types/rooms";
 
 export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
@@ -18,71 +17,103 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
   const activeFloor =
     selection.kind === "floor" ? selection.floor : activeRoom?.floor;
 
-  function selectRoom(room: StudioRoom) {
+  function choose(next: StudioSelection) {
     setManual(true);
-    setSelection({ kind: "room", roomId: room.id });
+    setSelection(next);
+  }
+
+  function selectRoom(room: StudioRoom) {
+    choose({ kind: "room", roomId: room.id });
   }
 
   return (
-    <>
-      <section
-        data-light-surface
-        id={sectionIds.studio}
-        aria-labelledby="preview-title"
-        className="site-gutter mx-auto max-w-screen-2xl border-t border-paper/25 py-14 sm:py-20"
-      >
-        <h2
-          id="preview-title"
-          className="font-display text-5xl font-bold uppercase sm:text-6xl"
-        >
-          Studio preview
-        </h2>
-        <p className="mt-3 text-muted">
-          A conceptual model of the two-floor studio.
-        </p>
-        <fieldset className="mt-6">
-          <legend className="mb-3 text-muted">Explore the studio</legend>
-          <div className="flex flex-wrap gap-3">
-            {floors.map((floor) => (
+    <section
+      data-light-surface
+      id={sectionIds.studio}
+      aria-labelledby="preview-title"
+      className="site-gutter mx-auto max-w-screen-2xl py-10 sm:py-16"
+    >
+      <div className="grid overflow-hidden border border-paper/20 bg-ink/65 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
+        <div className="p-5 sm:p-8">
+          <h2
+            id="preview-title"
+            className="font-display text-5xl font-bold uppercase"
+          >
+            Studio map
+          </h2>
+          <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted">
+            A conceptual model of the two-floor studio.
+          </p>
+
+          <fieldset className="mt-6">
+            <legend className="mb-2 text-sm font-semibold">View</legend>
+            <div className="flex flex-wrap gap-2">
               <button
-                key={floor}
                 type="button"
-                aria-pressed={activeFloor === floor}
-                onClick={() => {
-                  setManual(true);
-                  setSelection({ kind: "floor", floor });
-                }}
-                className="min-h-11 border border-paper/40 px-4 hover:border-amber aria-pressed:bg-amber aria-pressed:text-ink"
+                aria-pressed={selection.kind === "building"}
+                onClick={() => choose({ kind: "building" })}
+                className="min-h-11 border border-paper/25 px-3 text-sm hover:border-amber aria-pressed:border-amber aria-pressed:bg-amber aria-pressed:text-ink"
               >
-                Floor {floor}
+                Whole building
               </button>
+              {floors.map((floor) => (
+                <button
+                  key={floor}
+                  type="button"
+                  aria-pressed={activeFloor === floor}
+                  onClick={() => choose({ kind: "floor", floor })}
+                  className="min-h-11 border border-paper/25 px-3 text-sm hover:border-amber aria-pressed:border-amber aria-pressed:bg-amber aria-pressed:text-ink"
+                >
+                  Floor {floor}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <label
+            htmlFor="map-room"
+            className="mt-5 block text-sm font-semibold"
+          >
+            Room on map
+          </label>
+          <select
+            id="map-room"
+            className="mt-2 min-h-11 w-full border border-paper/25 bg-ink px-3 text-sm text-paper scheme-dark hover:border-amber"
+            value={activeRoom?.id ?? ""}
+            onChange={(event) => {
+              const room = rooms.find(
+                ({ id }) => id === event.currentTarget.value,
+              );
+              if (room) selectRoom(room);
+            }}
+          >
+            <option value="" disabled>
+              Choose a room
+            </option>
+            {floors.map((floor) => (
+              <optgroup key={floor} label={`Floor ${floor}`}>
+                {rooms
+                  .filter((room) => room.floor === floor)
+                  .map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
-            <button
-              type="button"
-              onClick={() => {
-                setManual(true);
-                setSelection({ kind: "building" });
-              }}
-              className="min-h-11 border border-paper/40 px-4 hover:border-amber"
-            >
-              Back to building
-            </button>
-            <a
-              href={`#${sectionIds.rooms}`}
-              className="inline-flex min-h-11 items-center px-2 text-amber underline underline-offset-4"
-            >
-              Browse rooms
-            </a>
-          </div>
+          </select>
           <p
-            className="mt-3 text-muted"
+            className="mt-4 text-sm text-muted"
             role="status"
             aria-label="Studio selection"
           >
-            {activeRoom?.name ??
-              (activeFloor ? `Floor ${activeFloor}` : "Building overview")}
+            {activeRoom
+              ? `${activeRoom.name} · Floor ${activeRoom.floor}`
+              : activeFloor
+                ? `Floor ${activeFloor}`
+                : "Building overview"}
           </p>
-        </fieldset>
+        </div>
         <StudioPreview
           manual={manual}
           rooms={rooms}
@@ -90,13 +121,7 @@ export function StudioExploration({ rooms }: { rooms: StudioRoom[] }) {
           activeRoom={activeRoom}
           onSelect={selectRoom}
         />
-      </section>
-      <RoomIndex
-        rooms={rooms}
-        activeFloor={activeFloor}
-        activeRoom={activeRoom}
-        onSelect={selectRoom}
-      />
-    </>
+      </div>
+    </section>
   );
 }
