@@ -135,11 +135,33 @@ const diyPassportPhotos = [
   },
 ];
 
+const diyPhotographyPhotos = [
+  {
+    src: "/images/diy/diy-2.jpeg",
+    alt: "Wooden mannequin hands holding printed photo strips",
+    width: 826,
+    height: 1126,
+  },
+  {
+    src: "/images/diy/diy-1.jpeg",
+    alt: "Decorated photo strips and iced drinks on a table",
+    width: 1064,
+    height: 1342,
+  },
+  {
+    src: "/images/diy/diy-3.jpeg",
+    alt: "Three iced drinks in front of a wood-paneled wall",
+    width: 776,
+    height: 1174,
+  },
+];
+
 export const roomPhotos: Partial<Record<RoomId, RoomPhoto[]>> = {
   portrait_l1: portraitPhotos,
   cinema_l1: cinemaPhotos,
   record_l1: recordPhotos,
   express_l1: expressPhotos,
+  diy_l1: diyPhotographyPhotos,
   self_photo_portrait_l2: selfPhotoPassPhotos,
   diy_self_photo_l2: diyPassportPhotos,
 };

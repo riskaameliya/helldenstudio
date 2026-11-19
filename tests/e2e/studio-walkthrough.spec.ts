@@ -387,3 +387,27 @@ test("Hellden Express shows its session inclusions and photo stack", async ({
     )
     .toBe(true);
 });
+
+test("DIY photography area loads its three photos", async ({ page }) => {
+  await page.goto("/#tour-diy_l1");
+  const room = page.locator("#tour-diy_l1");
+  await expect(room.getByText("Floor 1", { exact: true })).toBeInViewport();
+  const gallery = room.getByRole("complementary", {
+    name: "DIY photography area gallery",
+  });
+  await expect(gallery).toBeVisible();
+  const photos = gallery.getByRole("img");
+  await expect(photos).toHaveCount(3);
+  await expect
+    .poll(() =>
+      photos.evaluateAll((images) =>
+        images.every(
+          (image) =>
+            image instanceof HTMLImageElement &&
+            image.complete &&
+            image.naturalWidth > 0,
+        ),
+      ),
+    )
+    .toBe(true);
+});
