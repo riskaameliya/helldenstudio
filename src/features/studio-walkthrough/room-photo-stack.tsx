@@ -25,7 +25,7 @@ export function RoomPhotoStack({
                 alt={alt}
                 width={width}
                 height={height}
-                sizes="(max-width: 768px) 168px, 384px"
+                sizes="(max-width: 768px) 252px, 384px"
                 className="aspect-[3/4] w-full object-cover"
               />
             </a>

@@ -30,11 +30,6 @@ const tourStops = [
     detail: "Explore the upstairs DIY self-photo set and its backdrop.",
   },
   {
-    id: "operator_cashier_l2",
-    detail:
-      "See where the operator and cashier are located on the second floor.",
-  },
-  {
     id: "self_photo_portrait_l2",
     detail:
       "Look around the front portrait set with a backdrop, camera, and studio lights.",
