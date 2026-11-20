@@ -173,7 +173,7 @@
   gap: 1.2rem;
   padding-inline: 0.8rem;
   border: 1px solid var(--frame-border);
-  border-radius: 0.75rem;
+  border-radius: 0.3rem;
   background: #1c1512f5;
   cursor: pointer;
   list-style: none;
@@ -552,7 +552,8 @@
 
 .primary {
   padding-inline: 1rem;
-  border: 1px solid #ffc893;
+  border: 1px solid #9f6035;
+  border-radius: 0.3rem;
   background: #ffc087;
   color: var(--color-ink);
   font-weight: 700;
