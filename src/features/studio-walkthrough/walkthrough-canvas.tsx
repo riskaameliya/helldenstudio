@@ -1,12 +1,13 @@
 "use client";
 
 import { useGLTF } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Suspense,
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   type RefObject,
 } from "react";
 import { Mesh, PerspectiveCamera } from "three";
@@ -131,7 +132,22 @@ function StudioTourScene({
     return () => canvas.removeEventListener("webglcontextlost", onUnavailable);
   }, [gl, onUnavailable]);
 
-  useEffect(onReady, [onReady]);
+  const firstFrame = useRef<number | undefined>(undefined);
+  useFrame(() => {
+    if (firstFrame.current === undefined) {
+      // Fiber renders after frame subscribers run. Reveal on the next tick.
+      firstFrame.current = requestAnimationFrame(onReady);
+    }
+  });
+  useLayoutEffect(
+    () => () => {
+      if (firstFrame.current !== undefined) {
+        cancelAnimationFrame(firstFrame.current);
+        firstFrame.current = undefined;
+      }
+    },
+    [],
+  );
 
   return <primitive object={model} dispose={null} />;
 }

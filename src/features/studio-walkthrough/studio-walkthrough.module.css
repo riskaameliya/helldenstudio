@@ -100,6 +100,21 @@
   opacity: var(--corridor-opacity, 0);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .canvas[data-ready="true"] canvas {
+    animation: corridor-ready 180ms ease-out both;
+  }
+
+  @keyframes corridor-ready {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .doorLeaf {
     transform: none;

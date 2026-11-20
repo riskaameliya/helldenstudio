@@ -15,7 +15,7 @@ import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-e
 import { RoomSession } from "./room-session";
 import { roomPhotos } from "./room-photos";
 import { RoomPhotoStack } from "./room-photo-stack";
-import { entranceMotion } from "./entrance-motion";
+import { doorOpenEnd, entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
 import styles from "./studio-walkthrough.module.css";
 
@@ -59,21 +59,43 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   useEffect(() => {
     if (status !== "idle") return;
 
-    function loadOnTourScroll() {
+    function prepareScene() {
       const bounds = tour.current?.getBoundingClientRect();
-      if (
-        bounds &&
-        window.scrollY > 4 &&
-        bounds.top < window.innerHeight &&
-        bounds.bottom > window.innerHeight
-      ) {
+      if (bounds && bounds.top < window.innerHeight && bounds.bottom > 0) {
         requestScene();
       }
     }
 
+    function loadOnTourScroll() {
+      const bounds = entranceChapter.current?.getBoundingClientRect();
+      if (bounds && -bounds.top >= bounds.height * doorOpenEnd) {
+        prepareScene();
+      }
+    }
+
+    let cancelPreparation: (() => void) | undefined;
+    function schedulePreparation() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      if (window.requestIdleCallback) {
+        const id = window.requestIdleCallback(prepareScene);
+        cancelPreparation = () => window.cancelIdleCallback(id);
+      } else {
+        const id = window.setTimeout(prepareScene, 200);
+        cancelPreparation = () => window.clearTimeout(id);
+      }
+    }
+
+    if (document.readyState === "complete") schedulePreparation();
+    else window.addEventListener("load", schedulePreparation, { once: true });
+
     loadOnTourScroll();
     window.addEventListener("scroll", loadOnTourScroll, { passive: true });
-    return () => window.removeEventListener("scroll", loadOnTourScroll);
+    return () => {
+      cancelPreparation?.();
+      window.removeEventListener("load", schedulePreparation);
+      window.removeEventListener("scroll", loadOnTourScroll);
+    };
   }, [requestScene, status]);
 
   useEffect(() => {

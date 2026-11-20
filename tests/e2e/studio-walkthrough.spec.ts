@@ -15,12 +15,13 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   const chooseRoom = tour.getByText("Choose a room", { exact: true });
   const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
   await expect(tour.getByText("Hellden Studio entrance")).toBeVisible();
-  expect(requests).toHaveLength(0);
-  await page.evaluate(() => window.scrollTo(0, 260));
   await expect(
     tour.getByRole("status", { name: "Walkthrough view" }),
   ).toHaveText("Walkthrough view loaded.");
   expect(requests).toHaveLength(1);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(canvas).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 260));
 
   // Keep scroll position fixed while sampling the sticky viewport.
   const stageShot = () =>
@@ -71,6 +72,14 @@ test("scroll opens the door before showing the corridor and closes it on return"
   page,
 }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
+  let releaseModel!: () => void;
+  const modelDelay = new Promise<void>((resolve) => {
+    releaseModel = resolve;
+  });
+  await page.route(`**${studioModelPath}`, async (route) => {
+    await modelDelay;
+    await route.continue();
+  });
   await page.goto("/");
   const tour = page.getByRole("region", { name: "Enter the Hellden Universe" });
   const door = tour.getByTestId("entrance-door-leaf");
@@ -99,8 +108,10 @@ test("scroll opens the door before showing the corridor and closes it on return"
   await expect(door).not.toHaveCSS("transform", closed);
   await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "0");
   await scrollEntrance(0.42);
-  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "1");
   await expect.poll(angle).toBe(96);
+  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "0");
+  releaseModel();
+  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "1");
   await page.evaluate(() => scrollTo(0, 0));
   await expect.poll(angle).toBe(0);
   await expect(door).toHaveCSS("transform", closed);
