@@ -1,6 +1,7 @@
 .tour {
   --chapter-height: max(38rem, 100svh);
   --canvas-inset: 34%;
+  --frame-border: #c79b735e;
   background: #1c1512;
   color: var(--color-paper);
 }
@@ -100,6 +101,21 @@
   opacity: var(--corridor-opacity, 0);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .canvas[data-ready="true"] canvas {
+    animation: corridor-ready 180ms ease-out both;
+  }
+
+  @keyframes corridor-ready {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .doorLeaf {
     transform: none;
@@ -139,6 +155,12 @@
   font-size: 0.875rem;
 }
 
+@media (scripting: enabled) {
+  .roomMenu:not([data-available="true"]) {
+    display: none;
+  }
+}
+
 .roomMenu summary,
 .roomMenu a {
   display: flex;
@@ -150,7 +172,8 @@
   justify-content: space-between;
   gap: 1.2rem;
   padding-inline: 0.8rem;
-  border: 1px solid #f3e9d861;
+  border: 1px solid var(--frame-border);
+  border-radius: 0.3rem;
   background: #1c1512f5;
   cursor: pointer;
   list-style: none;
@@ -178,7 +201,8 @@
   max-height: min(65svh, 29rem);
   overflow-y: auto;
   padding: 0.25rem 0;
-  border: 1px solid #f3e9d861;
+  border: 1px solid var(--frame-border);
+  border-radius: 0.75rem;
   background: #1c1512;
 }
 
@@ -255,10 +279,6 @@
   pointer-events: auto;
 }
 
-.roomDetails {
-  margin-block-start: 1rem;
-}
-
 .title,
 .roomTitle {
   font-family: var(--font-display);
@@ -303,14 +323,12 @@
 }
 
 .roomTitle {
-  font-size: clamp(2.5rem, 4.7vw, 4.75rem);
+  font-size: clamp(2.8rem, 5.3vw, 5.35rem);
 }
 
 .roomCard {
   width: min(100%, 26rem);
   padding: clamp(1rem, 3vw, 2rem);
-  border: 1px solid #f3e9d855;
-  background: #1c1512ed;
 }
 
 .galleryChapter[data-gallery-visible] {
@@ -339,7 +357,7 @@
 .galleryPanel {
   position: relative;
   justify-self: center;
-  width: min(100%, 29rem);
+  width: min(100%, 30.5rem);
   padding-inline: 0.5rem;
   pointer-events: auto;
 }
@@ -357,12 +375,25 @@
   gap: 0.65rem;
 }
 
+.photoStack a {
+  position: relative;
+}
+
+.photoStack a::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--frame-border);
+  border-radius: inherit;
+  pointer-events: none;
+  content: "";
+}
+
 .photoHint {
   display: none;
 }
 
 .galleryChapter[data-gallery-visible] .photoStack {
-  --photo-height: clamp(13rem, 54svh, 32rem);
+  --photo-height: clamp(13rem, 58svh, 34rem);
   position: relative;
   display: block;
   height: calc(var(--photo-height) * 1.24);
@@ -433,6 +464,31 @@
   text-shadow: 0 1px 4px #000;
 }
 
+@media (width > 48rem) {
+  .tour:has(.galleryChapter[data-gallery-visible="true"]) {
+    & .entrance {
+      background: linear-gradient(110deg, #18181b 5%, #2c201c 44%, #482c20);
+    }
+
+    & .door {
+      visibility: hidden;
+    }
+
+    & .canvas {
+      mask-image: linear-gradient(90deg, transparent, #000 28%);
+    }
+
+    & .scrim {
+      background: linear-gradient(
+        90deg,
+        #18181b80,
+        #18181b33 40%,
+        transparent 65%
+      );
+    }
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .galleryPanel {
     transition:
@@ -459,10 +515,6 @@
     font-size: clamp(1.625rem, 5vw, 2.25rem);
   }
 
-  .roomDetails {
-    display: none;
-  }
-
   .roomCard .textLink {
     font-size: 0.8rem;
   }
@@ -480,7 +532,7 @@
   }
 
   .galleryChapter[data-gallery-visible] .photoStack {
-    --photo-height: clamp(9rem, min(34svh, 94vw), 21rem);
+    --photo-height: clamp(9rem, min(36svh, 94vw), 22rem);
   }
 
   .galleryChapter[data-gallery-visible] .photoHint {
@@ -500,7 +552,8 @@
 
 .primary {
   padding-inline: 1rem;
-  border: 1px solid #ffc893;
+  border: 1px solid #9f6035;
+  border-radius: 0.3rem;
   background: #ffc087;
   color: var(--color-ink);
   font-weight: 700;

@@ -4,6 +4,8 @@ import type { WalkthroughStop } from "./walkthrough-stops";
 
 type Pose = { position: ModelPoint; target: ModelPoint };
 
+export const roomArrivalFraction = 0.82;
+
 const corridorX = 5.35;
 const eyeHeight = 1.62;
 // Authored viewpoints for the blockout. The GLB has a solid upper slab.
@@ -78,7 +80,7 @@ export function walkthroughPose(
   if (!next || (previous && fraction < 0.18))
     return previous ? insideRoom(previous) : entrance;
   if (!previous && fraction <= corridorRevealEnd) return entrance;
-  if (fraction >= 0.82) return insideRoom(next);
+  if (fraction >= roomArrivalFraction) return insideRoom(next);
 
   // Cut from the top of the stairs to the upper landing, avoiding the solid slab.
   if (previous?.id === "stairs_l1" && next.floor === 2 && fraction < 0.55) {
@@ -105,7 +107,7 @@ export function walkthroughPose(
     : previous.floor === next.floor
       ? 0.18
       : 0.55;
-  const travel = (fraction - travelStart) / (0.82 - travelStart);
+  const travel = (fraction - travelStart) / (roomArrivalFraction - travelStart);
   const turn = Math.max(0, (travel - 0.72) / 0.28);
 
   return {

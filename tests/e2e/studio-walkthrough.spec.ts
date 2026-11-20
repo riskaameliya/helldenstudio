@@ -15,12 +15,14 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   const chooseRoom = tour.getByText("Choose a room", { exact: true });
   const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
   await expect(tour.getByText("Hellden Studio entrance")).toBeVisible();
-  expect(requests).toHaveLength(0);
-  await page.evaluate(() => window.scrollTo(0, 260));
+  await expect(chooseRoom).toBeHidden();
   await expect(
     tour.getByRole("status", { name: "Walkthrough view" }),
   ).toHaveText("Walkthrough view loaded.");
   expect(requests).toHaveLength(1);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(canvas).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 260));
 
   // Keep scroll position fixed while sampling the sticky viewport.
   const stageShot = () =>
@@ -37,12 +39,19 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   await expect
     .poll(async () => (await stageShot()).equals(corridor))
     .toBe(false);
-  await cinema.getByText("Look around", { exact: true }).click();
-  await expect(cinema.getByText(/screen and rows of seats/)).toBeVisible();
+  await expect(tour.getByText("Look around", { exact: true })).toHaveCount(0);
+  await expect(
+    tour.getByRole("link", { name: "See studio photos" }),
+  ).toHaveCount(0);
   await chooseRoom.click();
   await nav.getByRole("link", { name: "Entrance", exact: true }).click();
   await expect(page).toHaveURL(/#tour-entrance$/);
   await expect(tour.getByRole("heading", { level: 1 })).toBeInViewport();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(
+    page.getByRole("navigation", { name: "Main navigation" }),
+  ).toBeInViewport();
+  await expect(chooseRoom).toBeHidden();
 });
 
 test("room chapters and gallery links are available when the walkthrough model fails", async ({
@@ -57,20 +66,26 @@ test("room chapters and gallery links are available when the walkthrough model f
     page.getByRole("status", { name: "Walkthrough view" }),
   ).toHaveText(/3D is unavailable/);
   const portrait = page.locator("#tour-portrait_l1");
-  await portrait.getByText("Look around", { exact: true }).click();
   await expect(
-    portrait.getByText(/backdrop and studio lighting/),
-  ).toBeVisible();
-  await portrait.getByRole("link", { name: "See studio photos" }).click();
-  await expect(
-    page.getByRole("link", { name: "@helldenstudio on Instagram" }),
+    portrait.getByRole("heading", { name: "Hellden Portrait" }),
   ).toBeInViewport();
+  await expect(
+    portrait.getByRole("complementary", { name: "Hellden Portrait gallery" }),
+  ).toBeVisible();
 });
 
 test("scroll opens the door before showing the corridor and closes it on return", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
+  let releaseModel!: () => void;
+  const modelDelay = new Promise<void>((resolve) => {
+    releaseModel = resolve;
+  });
+  await page.route(`**${studioModelPath}`, async (route) => {
+    await modelDelay;
+    await route.continue();
+  });
   await page.goto("/");
   const tour = page.getByRole("region", { name: "Enter the Hellden Universe" });
   const door = tour.getByTestId("entrance-door-leaf");
@@ -99,8 +114,10 @@ test("scroll opens the door before showing the corridor and closes it on return"
   await expect(door).not.toHaveCSS("transform", closed);
   await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "0");
   await scrollEntrance(0.42);
-  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "1");
   await expect.poll(angle).toBe(96);
+  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "0");
+  releaseModel();
+  await expect(tour.locator("[data-ready]")).toHaveCSS("opacity", "1");
   await page.evaluate(() => scrollTo(0, 0));
   await expect.poll(angle).toBe(0);
   await expect(door).toHaveCSS("transform", closed);
@@ -114,6 +131,7 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   const tour = page.getByRole("region", { name: "Enter the Hellden Universe" });
   const menu = tour.getByText("Choose a room", { exact: true });
   const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
+  await page.evaluate(() => window.scrollTo(0, 260));
   await menu.click();
   await nav.getByRole("link", { name: "Stairs", exact: true }).click();
   await expect(page).toHaveURL(/#tour-stairs_l1$/);
@@ -128,6 +146,11 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   const diy = page.locator("#tour-diy_self_photo_l2");
   await expect(
     diy.getByRole("heading", { name: "DIY Self Photo Passport" }),
+  ).toBeInViewport();
+  await expect(
+    diy.getByText(
+      "Customize your photo passport with portraits, stamps, and stickers.",
+    ),
   ).toBeInViewport();
   const passportGallery = diy.getByRole("complementary", {
     name: "DIY Self Photo Passport gallery",
@@ -181,10 +204,6 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
         ),
     )
     .toBe(true);
-  await portrait.getByText("Look around", { exact: true }).click();
-  await expect(
-    portrait.getByText(/backdrop, camera, and studio lights/),
-  ).toBeVisible();
 });
 
 test("Hellden Portrait displays its price, inclusions, and three supplied photos", async ({
@@ -200,7 +219,6 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
     .getByRole("heading", { name: "Hellden Portrait" })
     .locator("..");
   await expect(titleCard.getByText("35k/session")).toBeVisible();
-  await expect(titleCard.getByText("Look around")).toBeHidden();
   await expect(panel.getByText("35k/session")).toHaveCount(0);
   await expect(
     portrait
@@ -243,7 +261,6 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
   expect(mobilePhoto?.width ?? 0).toBeGreaterThan(190);
 
   await page.setViewportSize({ width: 1280, height: 850 });
-  await expect(titleCard.getByText("Look around")).toBeVisible();
   await expect(panel).toBeVisible();
   const desktopCard = await titleCard.boundingBox();
   const desktopPanel = await panel.boundingBox();
@@ -340,6 +357,8 @@ test("Cinema holds the camera and scrolls all three photos", async ({
 test("Hellden Record shows its session offer and photo stack", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 850 });
   await page.goto("/#tour-record_l1");
   const record = page.locator("#tour-record_l1");
   await expect(
@@ -355,6 +374,36 @@ test("Hellden Record shows its session offer and photo stack", async ({
   const gallery = record.getByRole("complementary", { name: "Record gallery" });
   await expect(gallery).toBeVisible();
   await expect(gallery.getByRole("img")).toHaveCount(3);
+
+  const card = record
+    .getByRole("heading", { name: "Hellden Record" })
+    .locator("..");
+  const activePhoto = gallery.locator('[data-photo-position="active"] img');
+  const desktopCard = (await card.boundingBox())!;
+  const desktopPhoto = (await activePhoto.boundingBox())!;
+  const roomPanels = page.locator("[data-tour-chapter] h2").locator("..");
+  await expect(roomPanels).toHaveCount(8);
+  for (const panel of await roomPanels.all()) {
+    await expect(panel).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(panel).toHaveCSS("border-top-width", "0px");
+    await expect(panel).toHaveCSS("box-shadow", "none");
+  }
+  expect(desktopPhoto.width / desktopPhoto.height).toBeCloseTo(0.75, 2);
+  expect(
+    Math.abs(
+      desktopCard.y +
+        desktopCard.height / 2 -
+        desktopPhoto.y -
+        desktopPhoto.height / 2,
+    ),
+  ).toBeLessThan(2);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#tour-record_l1");
+  await expect(gallery).toBeVisible();
+  const mobileCard = (await card.boundingBox())!;
+  const mobilePhoto = (await activePhoto.boundingBox())!;
+  expect(mobileCard.y).toBeGreaterThan(mobilePhoto.y + mobilePhoto.height);
 });
 
 test("Hellden Express shows its session inclusions and photo stack", async ({

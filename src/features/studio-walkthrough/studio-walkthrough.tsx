@@ -15,7 +15,7 @@ import { ModelErrorBoundary } from "@/features/studio-anatomy/components/model-e
 import { RoomSession } from "./room-session";
 import { roomPhotos } from "./room-photos";
 import { RoomPhotoStack } from "./room-photo-stack";
-import { entranceMotion } from "./entrance-motion";
+import { doorOpenEnd, entranceMotion } from "./entrance-motion";
 import { tourChapterId, type WalkthroughStop } from "./walkthrough-stops";
 import styles from "./studio-walkthrough.module.css";
 
@@ -46,6 +46,7 @@ function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {
 export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   const tour = useRef<HTMLElement>(null);
   const entranceChapter = useRef<HTMLElement>(null);
+  const roomMenu = useRef<HTMLDetailsElement>(null);
   const [status, setStatus] = useState<
     "idle" | "loading" | "ready" | "unavailable"
   >("idle");
@@ -57,23 +58,63 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   const markUnavailable = useCallback(() => setStatus("unavailable"), []);
 
   useEffect(() => {
+    const menu = roomMenu.current;
+    if (!menu) return;
+
+    const header = document.querySelector("[data-site-header]");
+    if (!header) {
+      menu.dataset.available = "true";
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      menu.dataset.available = String(!entry.isIntersecting);
+      if (entry.isIntersecting) menu.open = false;
+    });
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (status !== "idle") return;
 
-    function loadOnTourScroll() {
+    function prepareScene() {
       const bounds = tour.current?.getBoundingClientRect();
-      if (
-        bounds &&
-        window.scrollY > 4 &&
-        bounds.top < window.innerHeight &&
-        bounds.bottom > window.innerHeight
-      ) {
+      if (bounds && bounds.top < window.innerHeight && bounds.bottom > 0) {
         requestScene();
       }
     }
 
+    function loadOnTourScroll() {
+      const bounds = entranceChapter.current?.getBoundingClientRect();
+      if (bounds && -bounds.top >= bounds.height * doorOpenEnd) {
+        prepareScene();
+      }
+    }
+
+    let cancelPreparation: (() => void) | undefined;
+    function schedulePreparation() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      if (window.requestIdleCallback) {
+        const id = window.requestIdleCallback(prepareScene);
+        cancelPreparation = () => window.cancelIdleCallback(id);
+      } else {
+        const id = window.setTimeout(prepareScene, 200);
+        cancelPreparation = () => window.clearTimeout(id);
+      }
+    }
+
+    if (document.readyState === "complete") schedulePreparation();
+    else window.addEventListener("load", schedulePreparation, { once: true });
+
     loadOnTourScroll();
     window.addEventListener("scroll", loadOnTourScroll, { passive: true });
-    return () => window.removeEventListener("scroll", loadOnTourScroll);
+    return () => {
+      cancelPreparation?.();
+      window.removeEventListener("load", schedulePreparation);
+      window.removeEventListener("scroll", loadOnTourScroll);
+    };
   }, [requestScene, status]);
 
   useEffect(() => {
@@ -207,7 +248,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           </div>
         )}
         <div className={styles.scrim} aria-hidden="true" />
-        <details className={styles.roomMenu}>
+        <details ref={roomMenu} className={styles.roomMenu}>
           <summary>Choose a room</summary>
           <nav aria-label="Walkthrough stops">
             <a href={`#${entranceId}`} onClick={closeRoomMenu}>
@@ -287,28 +328,23 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
               <h2 className={styles.roomTitle}>
                 {session?.title ?? room.name}
               </h2>
+              {room.intro && (
+                <p className="mt-3 max-w-[32ch] text-paper max-md:text-sm">
+                  {room.intro}
+                </p>
+              )}
               {session && (
                 <RoomSession
                   price={session.price}
                   passportAddOn={session.passportAddOn}
                 />
               )}
-              <details className={styles.roomDetails}>
-                <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
-                  Look around
-                </summary>
-                <p className="max-w-sm pb-4 text-paper">{room.detail}</p>
-              </details>
-              {room.id === "stairs_l1" ? (
+              {room.id === "stairs_l1" && (
                 <a
                   className={styles.textLink}
                   href={`#${tourChapterId("diy_self_photo_l2")}`}
                 >
                   Continue upstairs
-                </a>
-              ) : (
-                <a className={styles.textLink} href={`#${sectionIds.gallery}`}>
-                  See studio photos
                 </a>
               )}
               {index === stops.length - 1 && (
