@@ -38,8 +38,10 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   await expect
     .poll(async () => (await stageShot()).equals(corridor))
     .toBe(false);
-  await cinema.getByText("Look around", { exact: true }).click();
-  await expect(cinema.getByText(/screen and rows of seats/)).toBeVisible();
+  await expect(tour.getByText("Look around", { exact: true })).toHaveCount(0);
+  await expect(
+    tour.getByRole("link", { name: "See studio photos" }),
+  ).toHaveCount(0);
   await chooseRoom.click();
   await nav.getByRole("link", { name: "Entrance", exact: true }).click();
   await expect(page).toHaveURL(/#tour-entrance$/);
@@ -58,14 +60,12 @@ test("room chapters and gallery links are available when the walkthrough model f
     page.getByRole("status", { name: "Walkthrough view" }),
   ).toHaveText(/3D is unavailable/);
   const portrait = page.locator("#tour-portrait_l1");
-  await portrait.getByText("Look around", { exact: true }).click();
   await expect(
-    portrait.getByText(/backdrop and studio lighting/),
-  ).toBeVisible();
-  await portrait.getByRole("link", { name: "See studio photos" }).click();
-  await expect(
-    page.getByRole("link", { name: "@helldenstudio on Instagram" }),
+    portrait.getByRole("heading", { name: "Hellden Portrait" }),
   ).toBeInViewport();
+  await expect(
+    portrait.getByRole("complementary", { name: "Hellden Portrait gallery" }),
+  ).toBeVisible();
 });
 
 test("scroll opens the door before showing the corridor and closes it on return", async ({
@@ -140,6 +140,11 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   await expect(
     diy.getByRole("heading", { name: "DIY Self Photo Passport" }),
   ).toBeInViewport();
+  await expect(
+    diy.getByText(
+      "Customize your photo passport with portraits, stamps, and stickers.",
+    ),
+  ).toBeInViewport();
   const passportGallery = diy.getByRole("complementary", {
     name: "DIY Self Photo Passport gallery",
   });
@@ -192,10 +197,6 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
         ),
     )
     .toBe(true);
-  await portrait.getByText("Look around", { exact: true }).click();
-  await expect(
-    portrait.getByText(/backdrop, camera, and studio lights/),
-  ).toBeVisible();
 });
 
 test("Hellden Portrait displays its price, inclusions, and three supplied photos", async ({
@@ -211,7 +212,6 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
     .getByRole("heading", { name: "Hellden Portrait" })
     .locator("..");
   await expect(titleCard.getByText("35k/session")).toBeVisible();
-  await expect(titleCard.getByText("Look around")).toBeHidden();
   await expect(panel.getByText("35k/session")).toHaveCount(0);
   await expect(
     portrait
@@ -254,7 +254,6 @@ test("Hellden Portrait displays its price, inclusions, and three supplied photos
   expect(mobilePhoto?.width ?? 0).toBeGreaterThan(190);
 
   await page.setViewportSize({ width: 1280, height: 850 });
-  await expect(titleCard.getByText("Look around")).toBeVisible();
   await expect(panel).toBeVisible();
   const desktopCard = await titleCard.boundingBox();
   const desktopPanel = await panel.boundingBox();

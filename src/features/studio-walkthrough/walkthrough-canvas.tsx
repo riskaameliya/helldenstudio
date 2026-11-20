@@ -10,7 +10,14 @@ import {
   useRef,
   type RefObject,
 } from "react";
-import { Mesh, PerspectiveCamera } from "three";
+import {
+  Mesh,
+  PerspectiveCamera,
+  type AmbientLight,
+  type DirectionalLight,
+  type HemisphereLight,
+  type PointLight,
+} from "three";
 import {
   modelNodeFloor,
   modelNodeName,
@@ -22,6 +29,7 @@ import {
 } from "@/features/studio-anatomy/lib/studio-model";
 import { gsap, reducedMotionQuery, ScrollTrigger } from "@/lib/motion";
 import { chapterProgress } from "./chapter-progress";
+import { defaultWalkthroughLights, roomLighting } from "./walkthrough-lighting";
 import { walkthroughPose } from "./walkthrough-route";
 import type { WalkthroughStop } from "./walkthrough-stops";
 
@@ -44,6 +52,10 @@ function StudioTourScene({
   const gl = useThree((state) => state.gl);
   const get = useThree((state) => state.get);
   const { width, height } = useThree((state) => state.size);
+  const ambientLight = useRef<AmbientLight>(null);
+  const hemisphereLight = useRef<HemisphereLight>(null);
+  const directionalLight = useRef<DirectionalLight>(null);
+  const roomLight = useRef<PointLight>(null);
 
   useLayoutEffect(() => {
     const { camera } = get();
@@ -93,14 +105,40 @@ function StudioTourScene({
       });
     };
     measure();
+    const ambient = ambientLight.current;
+    const hemisphere = hemisphereLight.current;
+    const directional = directionalLight.current;
+    const accent = roomLight.current;
+    let currentPreset:
+      NonNullable<ReturnType<typeof roomLighting>>["preset"] | undefined;
     const renderPose = (scroll: number) => {
+      const progress = chapterProgress(scroll, starts, holds);
       const { position, target } = walkthroughPose(
         stops,
-        chapterProgress(scroll, starts, holds),
+        progress,
         motion.matches,
       );
       camera.position.copy(toScenePoint(position));
       camera.lookAt(toScenePoint(target));
+
+      const lighting = roomLighting(stops, progress, motion.matches);
+      if (ambient && hemisphere && directional && accent) {
+        const fill = lighting
+          ? 1 - (1 - lighting.preset.fill) * lighting.weight
+          : 1;
+        ambient.intensity = defaultWalkthroughLights.ambient * fill;
+        hemisphere.intensity = defaultWalkthroughLights.hemisphere * fill;
+        directional.intensity = defaultWalkthroughLights.directional * fill;
+        if (lighting && lighting.preset !== currentPreset) {
+          currentPreset = lighting.preset;
+          accent.position.copy(toScenePoint(currentPreset.position));
+          accent.color.set(currentPreset.color);
+          accent.distance = currentPreset.distance;
+        }
+        accent.intensity = lighting
+          ? lighting.preset.intensity * lighting.weight
+          : 0;
+      }
       invalidate();
     };
     const trigger = ScrollTrigger.create({
@@ -149,7 +187,25 @@ function StudioTourScene({
     [],
   );
 
-  return <primitive object={model} dispose={null} />;
+  return (
+    <>
+      <ambientLight
+        ref={ambientLight}
+        intensity={defaultWalkthroughLights.ambient}
+      />
+      <hemisphereLight
+        ref={hemisphereLight}
+        args={["#ffe6cb", "#77655a", defaultWalkthroughLights.hemisphere]}
+      />
+      <directionalLight
+        ref={directionalLight}
+        position={[6, 7, 5]}
+        intensity={defaultWalkthroughLights.directional}
+      />
+      <pointLight ref={roomLight} intensity={0} />
+      <primitive object={model} dispose={null} />
+    </>
+  );
 }
 
 export default function WalkthroughCanvas(props: WalkthroughCanvasProps) {
@@ -160,9 +216,6 @@ export default function WalkthroughCanvas(props: WalkthroughCanvasProps) {
       frameloop="demand"
     >
       <color attach="background" args={["#1c1512"]} />
-      <ambientLight intensity={0.65} />
-      <hemisphereLight args={["#ffe6cb", "#77655a", 2]} />
-      <directionalLight position={[6, 7, 5]} intensity={1.5} />
       <Suspense fallback={null}>
         <StudioTourScene {...props} />
       </Suspense>

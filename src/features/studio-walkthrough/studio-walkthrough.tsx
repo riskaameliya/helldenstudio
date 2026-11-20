@@ -303,34 +303,34 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           const session = sessions.get(room.id);
           const roomCard = (
             <div className={styles.roomCard}>
-              <p className="mb-2 text-sm text-amber max-md:mb-1 max-md:text-xs">
+              <p
+                className="mb-2 text-sm text-amber max-md:mb-1 max-md:text-xs"
+                data-passport-stamp={
+                  room.id === "diy_self_photo_l2" || undefined
+                }
+              >
                 Floor {room.floor}
               </p>
               <h2 className={styles.roomTitle}>
                 {session?.title ?? room.name}
               </h2>
+              {room.intro && (
+                <p className="mt-3 max-w-[32ch] text-paper max-md:text-sm">
+                  {room.intro}
+                </p>
+              )}
               {session && (
                 <RoomSession
                   price={session.price}
                   passportAddOn={session.passportAddOn}
                 />
               )}
-              <details className={styles.roomDetails}>
-                <summary className="min-h-11 cursor-pointer py-2 underline underline-offset-4">
-                  Look around
-                </summary>
-                <p className="max-w-sm pb-4 text-paper">{room.detail}</p>
-              </details>
-              {room.id === "stairs_l1" ? (
+              {room.id === "stairs_l1" && (
                 <a
                   className={styles.textLink}
                   href={`#${tourChapterId("diy_self_photo_l2")}`}
                 >
                   Continue upstairs
-                </a>
-              ) : (
-                <a className={styles.textLink} href={`#${sectionIds.gallery}`}>
-                  See studio photos
                 </a>
               )}
               {index === stops.length - 1 && (

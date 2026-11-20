@@ -1,6 +1,7 @@
 .tour {
   --chapter-height: max(38rem, 100svh);
   --canvas-inset: 34%;
+  --frame-border: #c79b735e;
   background: #1c1512;
   color: var(--color-paper);
 }
@@ -165,7 +166,8 @@
   justify-content: space-between;
   gap: 1.2rem;
   padding-inline: 0.8rem;
-  border: 1px solid #f3e9d861;
+  border: 1px solid var(--frame-border);
+  border-radius: 0.75rem;
   background: #1c1512f5;
   cursor: pointer;
   list-style: none;
@@ -193,7 +195,8 @@
   max-height: min(65svh, 29rem);
   overflow-y: auto;
   padding: 0.25rem 0;
-  border: 1px solid #f3e9d861;
+  border: 1px solid var(--frame-border);
+  border-radius: 0.75rem;
   background: #1c1512;
 }
 
@@ -270,10 +273,6 @@
   pointer-events: auto;
 }
 
-.roomDetails {
-  margin-block-start: 1rem;
-}
-
 .title,
 .roomTitle {
   font-family: var(--font-display);
@@ -322,10 +321,31 @@
 }
 
 .roomCard {
+  position: relative;
   width: min(100%, 26rem);
   padding: clamp(1rem, 3vw, 2rem);
-  border: 1px solid #f3e9d855;
+  border: 1px solid var(--frame-border);
+  border-radius: clamp(0.85rem, 1.6vw, 1.35rem);
   background: #1c1512ed;
+  box-shadow: 0 0.8rem 2.25rem #0c08064d;
+}
+
+.roomCard [data-passport-stamp]::after {
+  position: absolute;
+  inset-block-start: clamp(0.8rem, 2vw, 1.65rem);
+  inset-inline-end: clamp(1rem, 3vw, 2rem);
+  width: clamp(1.5rem, 3.8vw, 3.5rem);
+  aspect-ratio: 1;
+  border: 3px double currentColor;
+  border-radius: 50%;
+  background:
+    linear-gradient(currentColor, currentColor) center / 54% 1px no-repeat,
+    linear-gradient(currentColor, currentColor) center 37% / 38% 1px no-repeat,
+    linear-gradient(currentColor, currentColor) center 63% / 38% 1px no-repeat;
+  color: #dda4749e;
+  transform: rotate(-16deg);
+  pointer-events: none;
+  content: "";
 }
 
 .galleryChapter[data-gallery-visible] {
@@ -370,6 +390,19 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
+}
+
+.photoStack a {
+  position: relative;
+}
+
+.photoStack a::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--frame-border);
+  border-radius: inherit;
+  pointer-events: none;
+  content: "";
 }
 
 .photoHint {
@@ -472,10 +505,6 @@
 @media (max-width: 48rem) {
   .roomTitle {
     font-size: clamp(1.625rem, 5vw, 2.25rem);
-  }
-
-  .roomDetails {
-    display: none;
   }
 
   .roomCard .textLink {
