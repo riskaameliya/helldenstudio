@@ -357,6 +357,8 @@ test("Cinema holds the camera and scrolls all three photos", async ({
 test("Hellden Record shows its session offer and photo stack", async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 850 });
   await page.goto("/#tour-record_l1");
   const record = page.locator("#tour-record_l1");
   await expect(
@@ -372,6 +374,36 @@ test("Hellden Record shows its session offer and photo stack", async ({
   const gallery = record.getByRole("complementary", { name: "Record gallery" });
   await expect(gallery).toBeVisible();
   await expect(gallery.getByRole("img")).toHaveCount(3);
+
+  const card = record
+    .getByRole("heading", { name: "Hellden Record" })
+    .locator("..");
+  const activePhoto = gallery.locator('[data-photo-position="active"] img');
+  const desktopCard = (await card.boundingBox())!;
+  const desktopPhoto = (await activePhoto.boundingBox())!;
+  const roomPanels = page.locator("[data-tour-chapter] h2").locator("..");
+  await expect(roomPanels).toHaveCount(8);
+  for (const panel of await roomPanels.all()) {
+    await expect(panel).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(panel).toHaveCSS("border-top-width", "0px");
+    await expect(panel).toHaveCSS("box-shadow", "none");
+  }
+  expect(desktopPhoto.width / desktopPhoto.height).toBeCloseTo(0.75, 2);
+  expect(
+    Math.abs(
+      desktopCard.y +
+        desktopCard.height / 2 -
+        desktopPhoto.y -
+        desktopPhoto.height / 2,
+    ),
+  ).toBeLessThan(2);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#tour-record_l1");
+  await expect(gallery).toBeVisible();
+  const mobileCard = (await card.boundingBox())!;
+  const mobilePhoto = (await activePhoto.boundingBox())!;
+  expect(mobileCard.y).toBeGreaterThan(mobilePhoto.y + mobilePhoto.height);
 });
 
 test("Hellden Express shows its session inclusions and photo stack", async ({
