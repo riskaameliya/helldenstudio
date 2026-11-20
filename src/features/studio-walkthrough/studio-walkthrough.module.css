@@ -357,7 +357,7 @@
 .galleryPanel {
   position: relative;
   justify-self: center;
-  width: min(100%, 29rem);
+  width: min(100%, 30.5rem);
   padding-inline: 0.5rem;
   pointer-events: auto;
 }
@@ -393,7 +393,7 @@
 }
 
 .galleryChapter[data-gallery-visible] .photoStack {
-  --photo-height: clamp(13rem, 54svh, 32rem);
+  --photo-height: clamp(13rem, 58svh, 34rem);
   position: relative;
   display: block;
   height: calc(var(--photo-height) * 1.24);
@@ -532,7 +532,7 @@
   }
 
   .galleryChapter[data-gallery-visible] .photoStack {
-    --photo-height: clamp(9rem, min(34svh, 94vw), 21rem);
+    --photo-height: clamp(9rem, min(36svh, 94vw), 22rem);
   }
 
   .galleryChapter[data-gallery-visible] .photoHint {
