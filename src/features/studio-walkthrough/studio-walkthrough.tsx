@@ -46,6 +46,7 @@ function closeRoomMenu(event: MouseEvent<HTMLAnchorElement>) {
 export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   const tour = useRef<HTMLElement>(null);
   const entranceChapter = useRef<HTMLElement>(null);
+  const roomMenu = useRef<HTMLDetailsElement>(null);
   const [status, setStatus] = useState<
     "idle" | "loading" | "ready" | "unavailable"
   >("idle");
@@ -55,6 +56,24 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
   }, []);
   const markReady = useCallback(() => setStatus("ready"), []);
   const markUnavailable = useCallback(() => setStatus("unavailable"), []);
+
+  useEffect(() => {
+    const menu = roomMenu.current;
+    if (!menu) return;
+
+    const header = document.querySelector("[data-site-header]");
+    if (!header) {
+      menu.dataset.available = "true";
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      menu.dataset.available = String(!entry.isIntersecting);
+      if (entry.isIntersecting) menu.open = false;
+    });
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (status !== "idle") return;
@@ -229,7 +248,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           </div>
         )}
         <div className={styles.scrim} aria-hidden="true" />
-        <details className={styles.roomMenu}>
+        <details ref={roomMenu} className={styles.roomMenu}>
           <summary>Choose a room</summary>
           <nav aria-label="Walkthrough stops">
             <a href={`#${entranceId}`} onClick={closeRoomMenu}>
@@ -303,12 +322,7 @@ export function StudioWalkthrough({ stops }: { stops: WalkthroughStop[] }) {
           const session = sessions.get(room.id);
           const roomCard = (
             <div className={styles.roomCard}>
-              <p
-                className="mb-2 text-sm text-amber max-md:mb-1 max-md:text-xs"
-                data-passport-stamp={
-                  room.id === "diy_self_photo_l2" || undefined
-                }
-              >
+              <p className="mb-2 text-sm text-amber max-md:mb-1 max-md:text-xs">
                 Floor {room.floor}
               </p>
               <h2 className={styles.roomTitle}>

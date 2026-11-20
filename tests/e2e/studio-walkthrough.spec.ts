@@ -15,6 +15,7 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   const chooseRoom = tour.getByText("Choose a room", { exact: true });
   const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
   await expect(tour.getByText("Hellden Studio entrance")).toBeVisible();
+  await expect(chooseRoom).toBeHidden();
   await expect(
     tour.getByRole("status", { name: "Walkthrough view" }),
   ).toHaveText("Walkthrough view loaded.");
@@ -46,6 +47,11 @@ test("the entrance leads into the 3D tour and room stops can be inspected", asyn
   await nav.getByRole("link", { name: "Entrance", exact: true }).click();
   await expect(page).toHaveURL(/#tour-entrance$/);
   await expect(tour.getByRole("heading", { level: 1 })).toBeInViewport();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(
+    page.getByRole("navigation", { name: "Main navigation" }),
+  ).toBeInViewport();
+  await expect(chooseRoom).toBeHidden();
 });
 
 test("room chapters and gallery links are available when the walkthrough model fails", async ({
@@ -125,6 +131,7 @@ test("the stairs lead to the upper floor and the upper sets are reachable from t
   const tour = page.getByRole("region", { name: "Enter the Hellden Universe" });
   const menu = tour.getByText("Choose a room", { exact: true });
   const nav = tour.getByRole("navigation", { name: "Walkthrough stops" });
+  await page.evaluate(() => window.scrollTo(0, 260));
   await menu.click();
   await nav.getByRole("link", { name: "Stairs", exact: true }).click();
   await expect(page).toHaveURL(/#tour-stairs_l1$/);

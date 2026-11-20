@@ -4,7 +4,11 @@ import { site } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header data-light-surface="entrance" className="bg-entrance-ink">
+    <header
+      data-site-header
+      data-light-surface="entrance"
+      className="bg-entrance-ink"
+    >
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-10 focus:bg-ink focus:p-4"
